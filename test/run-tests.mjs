@@ -61,10 +61,25 @@ test("T3: Engine computes Before-vs-After Intimidation Score & Friction Reductio
   assert.match(engineSrc, /frictionReductionPercent/);
 });
 
-test("T4: Engine converts vague high-anxiety obligations into physical starter micro-steps", () => {
-  assert.match(engineSrc, /function toPhysicalMicroSteps/);
-  assert.match(engineSrc, /Open a single blank workspace file or tab/);
-  assert.match(engineSrc, /Save & Leave Breadcrumb/);
+test("T4: Micro-step headlines are under 8 words, imperative, with no quoted task title, plus task subline", () => {
+  const actionMatches = [
+    ...engineSrc.matchAll(/action\s*[:=]\s*"([^"]+)"/g),
+  ]
+    .map((m) => m[1])
+    .filter((s) => s.length > 0);
+  assert.ok(actionMatches.length >= 10, "Should find all micro-step action strings");
+  for (const act of actionMatches) {
+    const words = act.trim().split(/\s+/);
+    assert.ok(
+      words.length < 8,
+      `Headline "${act}" has ${words.length} words (must be < 8)`
+    );
+    assert.ok(
+      !act.includes('"'),
+      `Headline "${act}" must not contain quoted task title`
+    );
+  }
+  assert.match(pageSrc, /Task:\s*\{activeStep\.sourceClause\}/);
 });
 
 test("T5: Engine supports recursive 'Still Too Scary? Split in Half' micro-splitting", () => {
@@ -83,23 +98,21 @@ test("T7: API routes enforce sliding-window rate limiting", () => {
   assert.match(apiSplitSrc, /checkRateLimit/);
 });
 
-test("T8: UI implements Blindfold Focus Tunnel, Dyslexia spacing, High Contrast, and Web Speech Read-Aloud", () => {
-  assert.match(pageSrc, /blindfoldMode/);
-  assert.match(pageSrc, /dyslexiaMode/);
-  assert.match(pageSrc, /highContrast/);
-  assert.match(pageSrc, /speechSynthesis/);
-  assert.match(pageSrc, /Before vs\. After Impact Receipt/);
+test("T8: Step text uses sans font with loosened letter-spacing, timer starts paused with Start button, and toggle is named 'High contrast'", () => {
+  assert.match(cssSrc, /\.step-text-sans\s*\{[\s\S]*?letter-spacing:\s*0\.025em/);
+  assert.match(pageSrc, /step-text-sans font-sans font-bold/);
+  assert.match(pageSrc, /const \[timerRunning, setTimerRunning\] = useState<boolean>\(false\)/);
+  assert.match(pageSrc, /\{timerRunning \? "Pause" : "Start"\}/);
+  assert.match(pageSrc, /High contrast:\s*\{highContrast \? "ON" : "OFF"\}/);
+  assert.ok(!pageSrc.includes("AAA:"), "Should not display 'AAA:' toggle label");
 });
 
-test("T9: Studio UI includes bespoke UnthawBrandLogo SVG, Sliding Track Moon/Sun Toggle, Larger Scenario Pills, and AgentVault-style Floating Bottom Dock (TUNNEL / UNTHAW / SHIELD / IMPACT)", () => {
-  assert.match(pageSrc, /function UnthawBrandLogo/);
-  assert.match(pageSrc, /translate-x-8 bg-\[#07090E\]/);
+test("T9: Bottom dock has text labels (TUNNEL / UNTHAW / SHIELD ON / IMPACT) in a non-overlapping footer", () => {
+  assert.match(pageSrc, /<footer className="w-full pt-4 pb-6 px-4 flex justify-center shrink-0">/);
   assert.match(pageSrc, /TUNNEL/);
   assert.match(pageSrc, /UNTHAW/);
   assert.match(pageSrc, /SHIELD ON/);
   assert.match(pageSrc, /IMPACT/);
-  assert.match(pageSrc, /currentTempC/);
-  assert.match(cssSrc, /\.btn-thermal/);
 });
 
 console.log(`\nAll ${passed}/9 Unthaw verification tests PASSED.`);

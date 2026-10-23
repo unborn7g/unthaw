@@ -17,6 +17,12 @@ body {
   font-family: var(--font-serif);
 }
 
+/* Step Text Sans + Loosened Letter-Spacing */
+.step-text-sans {
+  font-family: var(--font-sans);
+  letter-spacing: 0.025em;
+}
+
 .font-mono-num {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;

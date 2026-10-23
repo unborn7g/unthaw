@@ -119,7 +119,6 @@ function splitIntoClauses(rawText: string): string[] {
 
   if (rawParts.length > 1) return rawParts;
 
-  // Fallback comma split if a single long sentence lists multiple nouns
   const commaParts = normalized
     .split(/,\s+(?:and\s+)?|\s+and\s+/i)
     .map((s) => s.trim())
@@ -135,21 +134,21 @@ function toPhysicalMicroSteps(
   const baseSeconds = BATTERY_SECONDS[battery];
   const steps: MicroStep[] = [];
 
-  // Step 1 is ALWAYS a zero-decision "workspace ignition" step so the user crosses the initiation threshold in <= 90 seconds.
+  // Step 1 is ALWAYS a zero-decision workspace ignition step (<8 words, imperative, no quoted title).
   const firstClause = clauses[0] || "your task";
   const cleanTopic = firstClause
     .replace(/^(write|complete|finish|study|fix|build|create)\s+(the\s+|a\s+)?/i, "")
-    .slice(0, 68);
+    .slice(0, 72);
 
   steps.push({
     id: "step-1",
     index: 1,
-    action: `Open a single blank workspace file or tab for "${cleanTopic}" and type only 3 rough bullet placeholders—no full sentences allowed yet.`,
+    action: "Open a blank file, type three words.",
     whyItWorks:
       "Bypasses perfectionism by separating physical file setup from creative thinking (Activation Energy < 90s).",
     durationSeconds: Math.min(90, baseSeconds),
     physicalVerb: "Open & Type 3 Words",
-    sourceClause: firstClause,
+    sourceClause: cleanTopic,
     canSplit: true,
     splitDepth: 0,
   });
@@ -162,32 +161,32 @@ function toPhysicalMicroSteps(
 
     if (/(literature|papers|cit(e|ing)|sources|bibliography)/i.test(lower)) {
       verb = "Collect 3 Links";
-      action = `Find and paste just 3 source titles or URLs for "${clause}" into your scratchpad without reading the full PDFs yet.`;
+      action = "Paste three source links into your notes.";
       why = "Separates link collection from deep reading so you do not get lost in 20 browser tabs.";
     } else if (/(diagram|architecture|chart|slide)/i.test(lower)) {
       verb = "Sketch Boxes";
-      action = `Draw or list the 4 main boxes/labels for "${clause}" as plain text arrows (A -> B -> C) before touching any design tool.`;
+      action = "Sketch four simple boxes with arrows.";
       why = "Plain-text wireframing removes visual-formatting friction during initiation.";
     } else if (/(bug|reproduce|401|oauth|error|fix|test|race)/i.test(lower)) {
       verb = "Run & Log One Line";
-      action = `Locate the exact file for "${clause}" and add one console/log line or run one existing test to observe current output.`;
+      action = "Run one test and log the output.";
       why = "Observing one real output replaces anxiety with concrete diagnostic feedback.";
     } else if (/(tax|transcript|form|upload|spreadsheet|budget|packet)/i.test(lower)) {
       verb = "Create Folder & Drop 1 File";
-      action = `Create a desktop folder named "Packet-Ready" and locate just the first document needed for "${clause}".`;
+      action = "Create one folder and drop one file.";
       why = "Physical file staging eliminates administrative overwhelm.";
     } else if (/(email|letter|prof|request|reply|post|slack)/i.test(lower)) {
       verb = "Write 2-Sentence Draft";
-      action = `Type a 2-sentence rough message for "${clause}" in your notes before opening your inbox or chat app.`;
+      action = "Draft two rough sentences in your notes.";
       why = "Drafting offline prevents notification hijacking while composing.";
     } else if (/(study|chapter|proof|problem set|exam|midterm)/i.test(lower)) {
       verb = "Scan Headings Only";
-      action = `Flip through "${clause}" for ${Math.round(baseSeconds / 60)} minutes and copy down 3 key terms or formulas—do not solve full problems yet.`;
+      action = "Scan the headings and copy three terms.";
       why = "Pre-scanning builds a mental map without triggering test-anxiety freeze.";
     } else {
       verb = "Write Ugly First Paragraph";
-      action = `Set a ${Math.round(baseSeconds / 60)}-minute timer and write 3 intentionally rough bullet points covering "${clause}".`;
-      why = "Giving yourself permission to write 'ugly' bullets shuts down the internal critic.";
+      action = "Write three rough bullet points right now.";
+      why = "Giving yourself permission to write rough bullets shuts down the internal critic.";
     }
 
     steps.push({
@@ -202,12 +201,11 @@ function toPhysicalMicroSteps(
       splitDepth: 0,
     });
 
-    // If low battery and clause is long, add a micro-checkpoint step
     if (battery === "low" && idx === 0 && clauses.length <= 2) {
       steps.push({
         id: `step-${steps.length + 1}`,
         index: steps.length + 1,
-        action: `Read your 3 rough bullets out loud once, pick the easiest one, and expand it by just 2 sentences.`,
+        action: "Expand your easiest bullet by two sentences.",
         whyItWorks: "Builds momentum from your own words instead of starting cold.",
         durationSeconds: 120,
         physicalVerb: "Expand 1 Bullet",
@@ -218,15 +216,15 @@ function toPhysicalMicroSteps(
     }
   });
 
-  // Final closure micro-step so the user locks in their progress
+  // Final closure micro-step (<8 words, imperative, no quotes)
   steps.push({
     id: `step-${steps.length + 1}`,
     index: steps.length + 1,
-    action: `Save your work, write a 5-word note at the top saying "NEXT TIME START HERE:", and take one slow breath.`,
+    action: "Save your file and leave one note.",
     whyItWorks: "Leaves a warm breadcrumb so your next session starts with zero friction.",
     durationSeconds: 60,
     physicalVerb: "Save & Leave Breadcrumb",
-    sourceClause: "Session Handoff",
+    sourceClause: cleanTopic,
     canSplit: false,
     splitDepth: 0,
   });
@@ -241,7 +239,7 @@ export function analyzeMetrics(
 ): BeforeAfterMetrics {
   const words = rawInput.trim().split(/\s+/).filter(Boolean);
   const hazards: string[] = [];
-  let score = 28; // baseline task friction
+  let score = 28;
 
   for (const h of HIGH_FRICTION_WORDS) {
     if (h.pattern.test(rawInput)) {
@@ -336,7 +334,7 @@ export function splitStepInHalf(step: MicroStep): [MicroStep, MicroStep] {
   const partA: MicroStep = {
     id: `${step.id}-a`,
     index: step.index,
-    action: `Part 1 of 2 (60s warm-up): Do ONLY the physical setup for "${step.sourceClause}"—open the exact window/file and put your cursor on the first line.`,
+    action: "Open the file and place your cursor.",
     whyItWorks:
       "Halves the activation threshold so your hands move before your brain can overthink.",
     durationSeconds: halfDuration,
@@ -349,8 +347,9 @@ export function splitStepInHalf(step: MicroStep): [MicroStep, MicroStep] {
   const partB: MicroStep = {
     id: `${step.id}-b`,
     index: step.index + 1,
-    action: `Part 2 of 2 (Complete micro-action): ${step.action}`,
-    whyItWorks: "With the file already open in front of you, completing the micro-action takes half the effort.",
+    action: "Type three rough words on line one.",
+    whyItWorks:
+      "With the file already open in front of you, completing the micro-action takes half the effort.",
     durationSeconds: halfDuration,
     physicalVerb: `${step.physicalVerb} (Finish)`,
     sourceClause: step.sourceClause,
