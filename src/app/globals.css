@@ -3,33 +3,186 @@
 @tailwind utilities;
 
 :root {
-  --bg-paper: #fbf9f4;
-  --bg-card: #ffffff;
-  --text-ink: #171715;
-  --text-muted: #57554f;
-  --accent-calm: #1d5c42;
-  --accent-warm: #c26318;
-  --border-soft: #e4dfd3;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-mono: "JetBrains Mono", monospace;
 }
 
 body {
-  background-color: var(--bg-paper);
-  color: var(--text-ink);
+  font-family: var(--font-sans);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
-.dyslexia-mode {
-  letter-spacing: 0.055em !important;
-  word-spacing: 0.14em !important;
-  line-height: 1.85 !important;
+.font-display {
+  font-family: var(--font-serif);
 }
 
-.high-contrast-mode {
-  --bg-paper: #ffffff;
-  --bg-card: #ffffff;
-  --text-ink: #000000;
-  --text-muted: #111111;
-  --accent-calm: #004d2c;
-  --accent-warm: #993d00;
-  --border-soft: #000000;
+.font-mono-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Dyslexia-Friendly Typography Override */
+.dyslexia-mode,
+.dyslexia-mode * {
+  letter-spacing: 0.055em !important;
+  word-spacing: 0.14em !important;
+  line-height: 1.82 !important;
+}
+
+/* Keyframe Animations Inspired by Prompt-Motion & Land-book */
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(-130%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(230%) skewX(-18deg);
+  }
+}
+
+@keyframes floatSlow {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(2deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes meltDrop {
+  0% {
+    transform: translateY(-4px) scale(0.92);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(10px) scale(1.05);
+    opacity: 0;
+  }
+}
+
+@keyframes cardReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 5s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3.2s ease-in-out infinite;
+}
+
+.animate-melt-drop {
+  animation: meltDrop 2.2s ease-in-out infinite;
+}
+
+.animate-card-reveal {
+  animation: cardReveal 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Tactile Liquid-Thermal Button Effect */
+.btn-thermal {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.2s ease;
+}
+
+.btn-thermal::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 42%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.28),
+    transparent
+  );
+  transform: translateX(-140%) skewX(-18deg);
+  transition: transform 0.65s ease;
+  pointer-events: none;
+}
+
+.btn-thermal:hover::after {
+  animation: shimmerSweep 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn-thermal:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btn-thermal:active:not(:disabled) {
+  transform: translateY(0px) scale(0.975);
+}
+
+/* Subtle Frost Grid Pattern */
+.bg-frost-grid-dark {
+  background-image: radial-gradient(
+      circle at 18% 12%,
+      rgba(56, 189, 248, 0.13),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 84% 22%,
+      rgba(245, 158, 11, 0.14),
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 52% 88%,
+      rgba(16, 185, 129, 0.1),
+      transparent 45%
+    ),
+    linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+}
+
+.bg-frost-grid-light {
+  background-image: radial-gradient(
+      circle at 16% 10%,
+      rgba(14, 165, 233, 0.11),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 86% 20%,
+      rgba(245, 158, 11, 0.14),
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 50% 90%,
+      rgba(16, 185, 129, 0.09),
+      transparent 45%
+    ),
+    linear-gradient(to right, rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 36px 36px, 36px 36px;
 }

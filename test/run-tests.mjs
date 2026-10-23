@@ -28,6 +28,10 @@ const pageSrc = fs.readFileSync(
   path.join(root, "src/app/page.tsx"),
   "utf8"
 );
+const cssSrc = fs.readFileSync(
+  path.join(root, "src/app/globals.css"),
+  "utf8"
+);
 const apiUnthawSrc = fs.readFileSync(
   path.join(root, "src/app/api/unthaw/route.ts"),
   "utf8"
@@ -87,4 +91,13 @@ test("T8: UI implements Blindfold Focus Tunnel, Dyslexia spacing, High Contrast,
   assert.match(pageSrc, /Before vs\. After Impact Receipt/);
 });
 
-console.log(`\nAll ${passed}/8 Unthaw verification tests PASSED.`);
+test("T9: Studio UI includes bespoke UnthawBrandLogo SVG, Dark/Light theme switcher, Thermal Telemetry (-18°C to +24°C), and Liquid-Thermal button animations", () => {
+  assert.match(pageSrc, /function UnthawBrandLogo/);
+  assert.match(pageSrc, /Light Mode/);
+  assert.match(pageSrc, /Dark Mode/);
+  assert.match(pageSrc, /currentTempC/);
+  assert.match(cssSrc, /\.btn-thermal/);
+  assert.match(cssSrc, /@keyframes shimmerSweep/);
+});
+
+console.log(`\nAll ${passed}/9 Unthaw verification tests PASSED.`);
