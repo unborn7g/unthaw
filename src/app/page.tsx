@@ -17,7 +17,7 @@ function UnthawBrandLogo({
 }) {
   const warmOpacity = Math.min(1, Math.max(0.25, thawRatio));
   return (
-    <div className="relative inline-flex items-center justify-center w-11 h-11 rounded-2xl p-[1.5px] bg-gradient-to-br from-sky-400 via-amber-400 to-emerald-400 shadow-lg shadow-amber-500/20 group">
+    <div className="relative inline-flex items-center justify-center w-10 h-10 rounded-2xl p-[1.5px] bg-gradient-to-br from-sky-400 via-amber-400 to-emerald-400 shadow-lg shadow-amber-500/15 group">
       <svg
         viewBox="0 0 64 64"
         fill="none"
@@ -27,18 +27,31 @@ function UnthawBrandLogo({
         aria-hidden="true"
       >
         <defs>
-          <linearGradient id="logoIceFacet" x1="16" y1="8" x2="48" y2="32" gradientUnits="userSpaceOnUse">
+          <linearGradient
+            id="logoIceFacet"
+            x1="16"
+            y1="8"
+            x2="48"
+            y2="32"
+            gradientUnits="userSpaceOnUse"
+          >
             <stop offset="0%" stopColor="#E0F2FE" />
             <stop offset="55%" stopColor="#38BDF8" />
             <stop offset="100%" stopColor="#0284C7" stopOpacity="0.4" />
           </linearGradient>
-          <linearGradient id="logoMeltAmber" x1="16" y1="18" x2="48" y2="54" gradientUnits="userSpaceOnUse">
+          <linearGradient
+            id="logoMeltAmber"
+            x1="16"
+            y1="18"
+            x2="48"
+            y2="54"
+            gradientUnits="userSpaceOnUse"
+          >
             <stop offset="0%" stopColor="#38BDF8" />
             <stop offset="45%" stopColor="#F59E0B" />
             <stop offset="100%" stopColor="#10B981" />
           </linearGradient>
         </defs>
-        {/* Subtle inner glow */}
         <circle
           cx="32"
           cy="38"
@@ -46,7 +59,6 @@ function UnthawBrandLogo({
           fill="#F59E0B"
           fillOpacity={warmOpacity * 0.28}
         />
-        {/* Top Crystalline Ice Crown */}
         <path
           d="M32 9L46 20.5L32 29L18 20.5L32 9Z"
           fill="url(#logoIceFacet)"
@@ -58,12 +70,10 @@ function UnthawBrandLogo({
           strokeLinecap="round"
           strokeOpacity="0.8"
         />
-        {/* Melting Liquid Vessel */}
         <path
           d="M18 20.5L32 29L46 20.5L47.5 35.5C47.5 44.3366 40.5604 51.5 32 51.5C23.4396 51.5 16.5 44.3366 16.5 35.5L18 20.5Z"
           fill="url(#logoMeltAmber)"
         />
-        {/* Inner Warm Hearth Spark */}
         <circle cx="32" cy="39" r="5.5" fill="#FFFBEB" />
         <path
           d="M32 31.5V46.5M24.5 39H39.5"
@@ -71,7 +81,6 @@ function UnthawBrandLogo({
           strokeWidth="1.75"
           strokeLinecap="round"
         />
-        {/* Animated Melting Droplet */}
         <circle
           cx="32"
           cy="55"
@@ -84,15 +93,21 @@ function UnthawBrandLogo({
   );
 }
 
+type StudioView = "focus" | "compose" | "receipt";
+
 export default function UnthawPage() {
   const [presets, setPresets] = useState<PresetScenario[]>([]);
-  const [selectedPresetId, setSelectedPresetId] = useState<string>("capstone-thesis");
+  const [selectedPresetId, setSelectedPresetId] =
+    useState<string>("capstone-thesis");
   const [rawInput, setRawInput] = useState<string>("");
   const [battery, setBattery] = useState<BatteryLevel>("low");
   const [plan, setPlan] = useState<UnthawPlan | null>(null);
   const [steps, setSteps] = useState<MicroStep[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [completedIds, setCompletedIds] = useState<string[]>([]);
+
+  // Calm Single-Stage View Switcher (eliminates 15 boxes crammed on one screen)
+  const [activeView, setActiveView] = useState<StudioView>("focus");
 
   // Theme & Accessibility States
   const [theme, setTheme] = useState<"dark" | "light">("dark");
@@ -123,7 +138,9 @@ export default function UnthawPage() {
     setTimerRunning(false);
     setStepAnimKey((k) => k + 1);
     setAnnouncement(
-      `Task unthawed into ${newPlan.steps.length} micro-steps. Only Step 1 is shown. ${newPlan.steps[0]?.action || ""}`
+      `Task unthawed into ${newPlan.steps.length} micro-steps. Only Step 1 is shown. ${
+        newPlan.steps[0]?.action || ""
+      }`
     );
   }, []);
 
@@ -162,10 +179,12 @@ export default function UnthawPage() {
 
   const handleUnthaw = async (
     overrideText?: string,
-    overrideBattery?: BatteryLevel
+    overrideBattery?: BatteryLevel,
+    switchToFocus = true
   ) => {
     const textToUse = overrideText !== undefined ? overrideText : rawInput;
-    const batteryToUse = overrideBattery !== undefined ? overrideBattery : battery;
+    const batteryToUse =
+      overrideBattery !== undefined ? overrideBattery : battery;
     if (!textToUse.trim()) return;
 
     setLoading(true);
@@ -178,6 +197,9 @@ export default function UnthawPage() {
       const data = await res.json();
       if (data.plan) {
         applyPlan(data.plan);
+        if (switchToFocus) {
+          setActiveView("focus");
+        }
       }
     } finally {
       setLoading(false);
@@ -188,7 +210,7 @@ export default function UnthawPage() {
     setSelectedPresetId(preset.id);
     setRawInput(preset.rawText);
     setBattery(preset.battery);
-    handleUnthaw(preset.rawText, preset.battery);
+    handleUnthaw(preset.rawText, preset.battery, true);
   };
 
   const activeStep = steps[activeIndex] || null;
@@ -219,7 +241,9 @@ export default function UnthawPage() {
       setSecondsLeft(steps[nextIdx].durationSeconds);
       setStepAnimKey((k) => k + 1);
       setAnnouncement(
-        `Completed step ${activeIndex + 1}. Moving to step ${nextIdx + 1}: ${steps[nextIdx].action}`
+        `Completed step ${activeIndex + 1}. Moving to step ${nextIdx + 1}: ${
+          steps[nextIdx].action
+        }`
       );
     } else {
       setStepAnimKey((k) => k + 1);
@@ -316,12 +340,12 @@ export default function UnthawPage() {
     0,
     Math.min(1, (totalStepSecs - secondsLeft) / Math.max(1, totalStepSecs))
   );
-  const radius = 52;
+  const radius = 56;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference * (1 - ringProgress);
   const hiddenRemainingCount = Math.max(0, steps.length - (activeIndex + 1));
 
-  // Dynamic surface classes for Dark Mode ("Glacial Obsidian") & Light Mode ("Warm Alabaster") + High Contrast
+  // Theme surfaces with generous breathing space and delicate borders
   const rootThemeClass = highContrast
     ? isDark
       ? "bg-black text-white"
@@ -330,21 +354,13 @@ export default function UnthawPage() {
     ? "bg-[#070B14] text-slate-100 bg-frost-grid-dark"
     : "bg-[#F6F3EC] text-slate-900 bg-frost-grid-light";
 
-  const cardSurface = highContrast
+  const mainStageSurface = highContrast
     ? isDark
       ? "bg-black border-2 border-white"
       : "bg-white border-2 border-black"
     : isDark
-    ? "bg-[#0D1424]/85 border border-slate-800/90 shadow-2xl shadow-black/40 backdrop-blur-xl"
-    : "bg-white/90 border border-stone-200/90 shadow-xl shadow-stone-900/5 backdrop-blur-xl";
-
-  const subSurface = highContrast
-    ? isDark
-      ? "bg-neutral-950 border border-white"
-      : "bg-neutral-50 border border-black"
-    : isDark
-    ? "bg-[#111B30]/80 border border-slate-800/80"
-    : "bg-[#FAF8F3] border border-stone-200/80";
+    ? "bg-[#0C1323]/75 border border-white/[0.07] shadow-[0_32px_80px_-20px_rgba(0,0,0,0.75)] backdrop-blur-2xl"
+    : "bg-white/85 border border-stone-200/80 shadow-[0_24px_60px_-15px_rgba(28,25,23,0.07)] backdrop-blur-2xl";
 
   const mutedText = highContrast
     ? isDark
@@ -356,7 +372,7 @@ export default function UnthawPage() {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-500 ${
+      className={`min-h-screen transition-colors duration-500 flex flex-col justify-between ${
         dyslexiaMode ? "dyslexia-mode" : ""
       } ${rootThemeClass}`}
     >
@@ -364,507 +380,297 @@ export default function UnthawPage() {
         {announcement}
       </div>
 
-      {/* Floating Pill Command Dock Navbar (Inspired by navbar.gallery) */}
-      <header className="sticky top-3 z-30 px-3 sm:px-6 pt-2">
+      {/* Floating Minimal Command Dock Navbar */}
+      <header className="sticky top-5 z-30 px-4 sm:px-8">
         <nav
           aria-label="Primary Command Dock"
-          className={`max-w-6xl mx-auto rounded-2xl px-4 py-2.5 transition-all duration-300 ${
+          className={`max-w-5xl mx-auto rounded-full px-5 py-2.5 transition-all duration-300 ${
             highContrast
               ? isDark
                 ? "bg-black border-2 border-white"
                 : "bg-white border-2 border-black"
               : isDark
-              ? "bg-[#0B1222]/85 border border-slate-700/60 shadow-2xl shadow-black/50 backdrop-blur-2xl"
-              : "bg-white/85 border border-stone-300/80 shadow-lg shadow-stone-900/5 backdrop-blur-2xl"
+              ? "bg-[#0B1222]/80 border border-white/[0.08] shadow-2xl shadow-black/50 backdrop-blur-2xl"
+              : "bg-white/85 border border-stone-300/70 shadow-lg shadow-stone-900/5 backdrop-blur-2xl"
           }`}
         >
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             {/* Brand Identity + Live Thermal Pill */}
-            <div className="flex items-center gap-3.5">
+            <div className="flex items-center gap-3">
               <UnthawBrandLogo
                 thawRatio={0.25 + thawProgress * 0.75}
                 isSpinning={loading}
               />
-              <div>
-                <div className="flex items-center gap-2.5">
-                  <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 bg-clip-text text-transparent">
-                    Unthaw
-                  </span>
-                  <span
-                    className={`font-mono-num text-[11px] font-semibold px-2.5 py-0.5 rounded-full border transition-all duration-500 ${
-                      currentTempC < -8
-                        ? isDark
-                          ? "bg-sky-950/80 text-sky-300 border-sky-700/60"
-                          : "bg-sky-50 text-sky-800 border-sky-200"
-                        : currentTempC < 10
-                        ? isDark
-                          ? "bg-amber-950/80 text-amber-300 border-amber-700/60"
-                          : "bg-amber-50 text-amber-900 border-amber-300"
-                        : isDark
-                        ? "bg-emerald-950/80 text-emerald-300 border-emerald-700/60"
-                        : "bg-emerald-50 text-emerald-900 border-emerald-300"
-                    }`}
-                  >
-                    {currentTempC > 0 ? `+${currentTempC}°C` : `${currentTempC}°C`} ·{" "}
-                    {tempLabel}
-                  </span>
-                </div>
-                <p className={`text-xs ${mutedText} hidden sm:block`}>
-                  Cryo-to-warmth executive-dysfunction &amp; task-paralysis breaker
-                </p>
-              </div>
+              <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 bg-clip-text text-transparent">
+                Unthaw
+              </span>
+              <span
+                className={`font-mono-num text-[11px] font-semibold px-3 py-1 rounded-full border transition-all duration-500 ${
+                  currentTempC < -8
+                    ? isDark
+                      ? "bg-sky-950/60 text-sky-300 border-sky-500/30"
+                      : "bg-sky-50 text-sky-800 border-sky-200"
+                    : currentTempC < 10
+                    ? isDark
+                      ? "bg-amber-950/60 text-amber-300 border-amber-500/30"
+                      : "bg-amber-50 text-amber-900 border-amber-300"
+                    : isDark
+                    ? "bg-emerald-950/60 text-emerald-300 border-emerald-500/30"
+                    : "bg-emerald-50 text-emerald-900 border-emerald-300"
+                }`}
+              >
+                {currentTempC > 0 ? `+${currentTempC}°C` : `${currentTempC}°C`} ·{" "}
+                {tempLabel}
+              </span>
             </div>
 
-            {/* Right Command Dock: Theme Switcher + Accessibility Toggles */}
+            {/* Center View Navigation Pills (Only 1 Stage on Screen at a Time) */}
             <div
-              className="flex flex-wrap items-center gap-1.5"
+              className={`inline-flex items-center p-1 rounded-full ${
+                isDark ? "bg-slate-900/90" : "bg-stone-200/70"
+              }`}
+              role="tablist"
+              aria-label="Workspace Stage"
+            >
+              {[
+                { id: "focus", label: "1. Focus Tunnel" },
+                { id: "compose", label: "2. Change Task" },
+                {
+                  id: "receipt",
+                  label: `3. Impact (-${plan?.metrics.frictionReductionPercent ?? 82}%)`,
+                },
+              ].map((tab) => {
+                const active = activeView === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setActiveView(tab.id as StudioView)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                      active
+                        ? "bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 text-slate-950 shadow-sm font-bold"
+                        : `${mutedText} hover:text-current`
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Right Accessibility & Theme Controls */}
+            <div
+              className="flex items-center gap-1.5"
               role="toolbar"
               aria-label="Theme and accessibility controls"
             >
-              {/* Dark / Light Mode Toggle Pill */}
               <button
                 type="button"
                 onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
                 aria-label={`Switch to ${isDark ? "Light" : "Dark"} mode`}
-                title="Shortcut: T — Switch between Glacial Night (Dark) and Warm Alabaster (Light)"
-                className={`btn-thermal flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-xl border ${
+                title="Shortcut: T — Switch between Dark and Light mode"
+                className={`btn-thermal flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border ${
                   isDark
-                    ? "bg-slate-800/90 text-amber-300 border-slate-700 hover:border-amber-400/60"
-                    : "bg-stone-100 text-slate-900 border-stone-300 hover:border-amber-500"
+                    ? "bg-slate-900/90 text-amber-300 border-white/10"
+                    : "bg-stone-100 text-slate-900 border-stone-300"
                 }`}
               >
-                {isDark ? (
-                  <>
-                    <svg className="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 3a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V4a1 1 0 0 1 1-1Zm0 15a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1Zm9-7a1 1 0 0 1-1 1h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 1 1ZM5 12a1 1 0 0 1-1 1H3a1 1 0 1 1 0-2h1a1 1 0 0 1 1 1Zm14.071-6.071a1 1 0 0 1 0 1.414l-.707.707a1 1 0 1 1-1.414-1.414l.707-.707a1 1 0 0 1 1.414 0ZM7.05 16.95a1 1 0 0 1 0 1.414l-.707.707a1 1 0 0 1-1.414-1.414l.707-.707a1 1 0 0 1 1.414 0Zm12.021 1.414a1 1 0 0 1-1.414 0l-.707-.707a1 1 0 0 1 1.414-1.414l.707.707a1 1 0 0 1 0 1.414ZM7.05 7.05a1 1 0 0 1-1.414 0l-.707-.707A1 1 0 0 1 6.343 4.93l.707.707a1 1 0 0 1 0 1.414ZM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z" />
-                    </svg>
-                    <span>Light Mode</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-3.5 h-3.5 text-sky-600" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M21.752 15.002A9.718 9.718 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
-                    </svg>
-                    <span>Dark Mode</span>
-                  </>
-                )}
+                <span>{isDark ? "☀ Light Mode" : "☾ Dark Mode"}</span>
               </button>
 
-              {/* Blindfold Shield Toggle */}
-              <button
-                type="button"
-                onClick={() => setBlindfoldMode((b) => !b)}
-                aria-pressed={blindfoldMode}
-                title="Shortcut: B — Hide upcoming steps behind a frost shield so your brain only sees 1 action"
-                className={`btn-thermal text-xs px-3 py-1.5 rounded-xl border font-semibold ${
-                  blindfoldMode
-                    ? "bg-gradient-to-r from-sky-500/20 to-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-sm"
-                    : isDark
-                    ? "bg-slate-900 text-slate-300 border-slate-700"
-                    : "bg-white text-stone-700 border-stone-300"
-                } ${!isDark && blindfoldMode ? "!text-emerald-900 !border-emerald-600" : ""}`}
-              >
-                {blindfoldMode ? "Blindfold Shield: ON" : "Blindfold Shield: OFF"}
-              </button>
-
-              {/* Dyslexia Spacing Toggle */}
               <button
                 type="button"
                 onClick={() => setDyslexiaMode((d) => !d)}
                 aria-pressed={dyslexiaMode}
-                className={`btn-thermal text-xs px-3 py-1.5 rounded-xl border font-semibold ${
+                className={`btn-thermal text-xs px-3 py-1.5 rounded-full border font-semibold ${
                   dyslexiaMode
-                    ? "bg-amber-500 text-slate-950 border-amber-400"
+                    ? "bg-amber-400 text-slate-950 border-amber-400"
                     : isDark
-                    ? "bg-slate-900 text-slate-300 border-slate-700"
+                    ? "bg-slate-900/90 text-slate-300 border-white/10"
                     : "bg-white text-stone-700 border-stone-300"
                 }`}
               >
                 Dyslexia: {dyslexiaMode ? "ON" : "OFF"}
               </button>
 
-              {/* High Contrast Toggle */}
               <button
                 type="button"
                 onClick={() => setHighContrast((c) => !c)}
                 aria-pressed={highContrast}
-                className={`btn-thermal text-xs px-3 py-1.5 rounded-xl border font-semibold ${
+                className={`btn-thermal text-xs px-3 py-1.5 rounded-full border font-semibold ${
                   highContrast
                     ? isDark
                       ? "bg-white text-black border-white"
                       : "bg-black text-white border-black"
                     : isDark
-                    ? "bg-slate-900 text-slate-300 border-slate-700"
+                    ? "bg-slate-900/90 text-slate-300 border-white/10"
                     : "bg-white text-stone-700 border-stone-300"
                 }`}
               >
-                AAA Contrast: {highContrast ? "ON" : "OFF"}
+                AAA: {highContrast ? "ON" : "OFF"}
               </button>
             </div>
           </div>
         </nav>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-14 space-y-7">
-        {/* Editorial Hero Header + Live Thermal Melt Bar (Inspired by Land-book & Deck.gallery) */}
-        <section className={`rounded-3xl p-6 sm:p-8 relative overflow-hidden ${cardSurface}`}>
-          {/* Decorative Ambient Aura */}
-          {!highContrast && (
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full bg-gradient-to-br from-sky-500/20 via-amber-500/20 to-emerald-500/20 blur-3xl animate-pulse-glow"
-            />
-          )}
+      {/* Center Breathing Workspace — Generous Negative Space, One Focal Canvas */}
+      <main className="flex-1 flex flex-col justify-center max-w-4xl w-full mx-auto px-5 sm:px-8 py-12 sm:py-16 space-y-10">
+        {/* Breathable Editorial Hero Title */}
+        <div className="text-center space-y-4 max-w-2xl mx-auto">
+          <h1 className="font-display text-4xl sm:text-6xl tracking-tight leading-[1.06]">
+            Every freeze melts{" "}
+            <span className="italic bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 bg-clip-text text-transparent">
+              one micro-step
+            </span>{" "}
+            at a time.
+          </h1>
+          <p className={`text-sm sm:text-base leading-relaxed ${mutedText}`}>
+            Your brain does not need 15 checkboxes right now. Everything else is tucked safely out of sight—just do this single physical action.
+          </p>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
-            <div className="lg:col-span-7 space-y-2.5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border border-amber-500/30 bg-amber-500/10 text-amber-400">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                <span className={!isDark ? "text-amber-900" : ""}>
-                  Executive-Dysfunction &amp; Task-Paralysis Breaker
-                </span>
-              </div>
-
-              <h1 className="font-display text-3xl sm:text-5xl tracking-tight leading-[1.08]">
-                Every freeze melts{" "}
-                <span className="italic bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 bg-clip-text text-transparent">
-                  one micro-step
-                </span>{" "}
-                at a time.
-              </h1>
-
-              <p className={`text-sm sm:text-base max-w-2xl leading-relaxed ${mutedText}`}>
-                Standard to-do lists show 15 unfinished obligations at once and lock your nervous system in sub-zero avoidance.{" "}
-                <strong className={isDark ? "text-white" : "text-slate-900"}>Unthaw</strong> tucks the backlog behind a frosted{" "}
-                <strong className={isDark ? "text-sky-300" : "text-sky-700"}>Blindfold Shield</strong> and hands you a single{" "}
-                <strong className={isDark ? "text-amber-300" : "text-amber-800"}>90-second physical starter action</strong>.
-              </p>
-            </div>
-
-            {/* Live Cryo-to-Warmth Telemetry Module */}
-            <div className={`lg:col-span-5 rounded-2xl p-4 sm:p-5 space-y-3 ${subSurface}`}>
-              <div className="flex items-center justify-between text-xs font-semibold">
-                <span className="uppercase tracking-wider text-sky-400">
-                  Cryo Freeze (-18°C)
-                </span>
-                <span className="font-mono-num font-bold text-amber-400">
-                  {Math.round(thawProgress * 100)}% Thawed
-                </span>
-                <span className="uppercase tracking-wider text-emerald-400">
-                  Flow (+24°C)
-                </span>
-              </div>
-
-              {/* Animated Thermal Gradient Bar */}
-              <div className="w-full h-3.5 rounded-full bg-slate-900/70 p-0.5 overflow-hidden border border-slate-700/50">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 transition-all duration-700 ease-out"
-                  style={{ width: `${Math.max(12, Math.round(thawProgress * 100))}%` }}
-                />
-              </div>
-
-              {plan && (
-                <div className="grid grid-cols-3 gap-2 pt-1 text-center">
-                  <div className="rounded-xl p-2 bg-sky-500/10 border border-sky-500/20">
-                    <div className="font-mono-num font-bold text-base text-sky-400">
-                      {plan.metrics.intimidationScoreBefore}/100
-                    </div>
-                    <div className={`text-[11px] ${mutedText}`}>Raw Freeze</div>
-                  </div>
-                  <div className="rounded-xl p-2 bg-amber-500/10 border border-amber-500/20">
-                    <div className="font-mono-num font-bold text-base text-amber-400">
-                      {steps[0]?.durationSeconds ?? 90}s
-                    </div>
-                    <div className={`text-[11px] ${mutedText}`}>First Step</div>
-                  </div>
-                  <div className="rounded-xl p-2 bg-emerald-500/10 border border-emerald-500/20">
-                    <div className="font-mono-num font-bold text-base text-emerald-400">
-                      -{plan.metrics.frictionReductionPercent}%
-                    </div>
-                    <div className={`text-[11px] ${mutedText}`}>Friction Drop</div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Bento Strip: 4 Real-World Overwhelming Scenarios (Inspired by Posts.design) */}
-        <section aria-label="Sample overwhelming scenarios" className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-amber-400">
-              01 · Choose a Frozen Scenario (or paste your own below)
-            </h2>
-            <div className={`text-xs ${mutedText} flex flex-wrap items-center gap-1.5`}>
-              <span>Shortcuts:</span>
-              <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 font-mono-num text-[11px]">
-                Space
-              </kbd>
-              <span>timer</span>
-              <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 font-mono-num text-[11px]">
-                Enter
-              </kbd>
-              <span>done</span>
-              <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 font-mono-num text-[11px]">
-                S
-              </kbd>
-              <span>split 50%</span>
-              <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 font-mono-num text-[11px]">
-                R
-              </kbd>
-              <span>voice</span>
-              <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 font-mono-num text-[11px]">
-                T
-              </kbd>
-              <span>theme</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {presets.map((p, idx) => {
+          {/* Lightweight Scenario Switcher Pills (Zero Cluttered Boxes) */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
+            {presets.map((p) => {
               const active = selectedPresetId === p.id;
-              const accentBadges = [
-                "from-sky-500/20 to-indigo-500/20 border-sky-400/50",
-                "from-amber-500/20 to-orange-500/20 border-amber-400/50",
-                "from-emerald-500/20 to-teal-500/20 border-emerald-400/50",
-                "from-purple-500/20 to-pink-500/20 border-purple-400/50",
-              ];
               return (
                 <button
                   key={p.id}
                   type="button"
                   onClick={() => handleSelectPreset(p)}
-                  className={`btn-thermal text-left p-4 rounded-2xl transition-all flex flex-col justify-between ${
+                  className={`btn-thermal text-xs px-3.5 py-1.5 rounded-full transition-all ${
                     active
-                      ? `bg-gradient-to-br ${accentBadges[idx % 4]} border-2 shadow-lg`
-                      : `${cardSurface} hover:border-amber-400/50`
+                      ? isDark
+                        ? "bg-amber-400/20 text-amber-300 border border-amber-400/50 font-semibold"
+                        : "bg-amber-500/15 text-amber-900 border border-amber-500/40 font-semibold"
+                      : isDark
+                      ? "bg-white/[0.04] text-slate-400 border border-white/[0.06] hover:text-slate-200"
+                      : "bg-stone-200/60 text-stone-600 border border-stone-300/60 hover:text-stone-900"
                   }`}
                 >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30">
-                        {p.barrierTag}
-                      </span>
-                      <span className="font-mono-num text-[11px] font-bold uppercase text-amber-400">
-                        {p.battery}
-                      </span>
-                    </div>
-                    <h3 className="font-bold text-sm leading-snug">{p.label}</h3>
-                  </div>
-                  <p className={`text-xs mt-2 line-clamp-2 ${mutedText}`}>
-                    {p.persona}
-                  </p>
+                  {p.label}
                 </button>
               );
             })}
-          </div>
-        </section>
-
-        {/* Main 2-Column Interactive Studio: Left = Cryo Input & Battery | Right = Blindfold Focus Tunnel */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Column: Frozen Task Input + Cognitive Battery */}
-          <section className={`lg:col-span-5 rounded-3xl p-6 space-y-5 ${cardSurface}`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-[11px] font-bold uppercase tracking-widest text-sky-400">
-                  02 · Frozen Input
-                </span>
-                <h2 className="font-bold text-lg">Dump What Is Freezing You</h2>
-              </div>
-              {plan && (
-                <span className="font-mono-num text-xs font-bold px-2.5 py-1 rounded-lg bg-rose-500/15 text-rose-400 border border-rose-500/30">
-                  Freeze: {plan.metrics.intimidationScoreBefore}/100
-                </span>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="raw-task-input"
-                className={`block text-xs mb-2 ${mutedText}`}
-              >
-                Paste an intimidating syllabus prompt, bug report, or multi-part backlog:
-              </label>
-              <textarea
-                id="raw-task-input"
-                rows={4}
-                value={rawInput}
-                onChange={(e) => {
-                  setRawInput(e.target.value);
-                  setSelectedPresetId("custom");
-                }}
-                placeholder="e.g., Write 12-page capstone paper on distributed consensus by Friday including 15 citations, benchmarks, and architecture diagrams..."
-                className={`w-full rounded-2xl p-3.5 text-sm transition focus:outline-none focus:ring-2 focus:ring-amber-400 ${subSurface}`}
-              />
-            </div>
-
-            {/* Cognitive Battery Level Picker */}
-            <div className="space-y-2">
-              <span className="block text-xs font-bold uppercase tracking-widest text-amber-400">
-                03 · Select Your Cognitive Battery
-              </span>
-              <div className="grid grid-cols-3 gap-2.5">
-                {(
-                  [
-                    {
-                      id: "low",
-                      title: "Low Battery",
-                      sub: "90s–2m steps",
-                      badge: "Frozen",
-                      dot: "bg-sky-400",
-                    },
-                    {
-                      id: "steady",
-                      title: "Steady",
-                      sub: "5m momentum",
-                      badge: "Warming",
-                      dot: "bg-amber-400",
-                    },
-                    {
-                      id: "deep",
-                      title: "Deep Flow",
-                      sub: "10m sprints",
-                      badge: "Charged",
-                      dot: "bg-emerald-400",
-                    },
-                  ] as const
-                ).map((b) => {
-                  const selected = battery === b.id;
-                  return (
-                    <button
-                      key={b.id}
-                      type="button"
-                      onClick={() => {
-                        setBattery(b.id);
-                        handleUnthaw(rawInput, b.id);
-                      }}
-                      className={`btn-thermal p-3 rounded-2xl border text-left transition-all ${
-                        selected
-                          ? "bg-gradient-to-br from-amber-500/20 to-emerald-500/20 border-amber-400 shadow-md"
-                          : `${subSurface} hover:border-slate-600`
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span className={`w-2 h-2 rounded-full ${b.dot}`} />
-                        <span className="font-mono-num text-[11px] font-bold uppercase text-amber-400">
-                          {b.badge}
-                        </span>
-                      </div>
-                      <div className="font-bold text-xs mt-1">{b.title}</div>
-                      <div className={`text-[11px] ${mutedText}`}>{b.sub}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Primary Thermal CTA Button */}
             <button
               type="button"
-              onClick={() => handleUnthaw()}
-              disabled={loading || !rawInput.trim()}
-              className="btn-thermal w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-sky-500 via-amber-500 to-emerald-500 text-slate-950 font-extrabold text-sm shadow-lg shadow-amber-500/25 disabled:opacity-50 flex items-center justify-center gap-2"
+              onClick={() => setActiveView("compose")}
+              className={`btn-thermal text-xs px-3.5 py-1.5 rounded-full border border-dashed ${
+                isDark
+                  ? "border-sky-400/40 text-sky-300 hover:bg-sky-400/10"
+                  : "border-sky-600/40 text-sky-800 hover:bg-sky-50"
+              }`}
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
-              </svg>
-              <span>
-                {loading
-                  ? "Melting Freeze Into Micro-Steps…"
-                  : "Unthaw Into Single 90s Micro-Step"}
-              </span>
+              + Paste Your Own Task
             </button>
+          </div>
+        </div>
 
-            {/* Detected Cognitive Freeze Triggers */}
-            {plan && (
-              <div className={`rounded-2xl p-4 space-y-2.5 ${subSurface}`}>
-                <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="text-sky-400">
-                    Why Your Brain Froze (Detected Triggers)
-                  </span>
-                  <span className="font-mono-num text-emerald-400">
-                    -{plan.metrics.frictionReductionPercent}% Friction
-                  </span>
-                </div>
-                <ul className="space-y-1.5 text-xs">
-                  {plan.metrics.cognitiveHazardsFound.map((h, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
-                      <span>{h}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </section>
-
-          {/* Right Column: Center-Stage Blindfold Focus Tunnel */}
+        {/* STAGE 1: ZEN FOCUS TUNNEL (Default Single-Card Sanctuary) */}
+        {activeView === "focus" && (
           <section
             aria-label="Active micro-step focus tunnel"
-            className={`lg:col-span-7 rounded-3xl p-6 sm:p-8 relative overflow-hidden transition-all duration-500 ${cardSurface} ${
-              thawPulse ? "ring-4 ring-amber-400/70 scale-[1.005]" : ""
+            className={`rounded-[32px] p-8 sm:p-12 relative overflow-hidden transition-all duration-500 ${mainStageSurface} ${
+              thawPulse ? "ring-2 ring-amber-400/70 scale-[1.005]" : ""
             }`}
           >
-            {/* Top Status Strip */}
+            {/* Subtle Ambient Glow Inside the Sanctuary */}
+            {!highContrast && (
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -top-28 -right-28 w-80 h-80 rounded-full bg-gradient-to-br from-sky-500/15 via-amber-500/15 to-emerald-500/15 blur-3xl animate-pulse-glow"
+              />
+            )}
+
+            {/* Top Minimal Progress Line */}
             {plan && (
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700/40 pb-4 mb-5">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <div className="space-y-4 mb-10 relative z-10">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                     <span className="font-mono-num text-xs uppercase tracking-widest font-bold text-emerald-400">
-                      {blindfoldMode
-                        ? `Blindfold Focus Tunnel · Step ${Math.min(
-                            activeIndex + 1,
-                            steps.length
-                          )} of ${steps.length}`
-                        : `Full Sequence View · ${completedIds.length}/${steps.length} Melted`}
+                      Step {Math.min(activeIndex + 1, steps.length)} of{" "}
+                      {steps.length}
                     </span>
+                    <span className={`text-xs ${mutedText}`}>
+                      · {battery.toUpperCase()} BATTERY
+                    </span>
+                    {splitCount > 0 && (
+                      <span className="font-mono-num text-xs text-amber-400">
+                        · Split {splitCount}× smaller
+                      </span>
+                    )}
                   </div>
-                  <p className={`text-xs mt-1 ${mutedText}`}>{plan.calmReframe}</p>
+
+                  {/* Quick Battery Switcher Pills */}
+                  <div className="flex items-center gap-1.5">
+                    {(["low", "steady", "deep"] as const).map((b) => (
+                      <button
+                        key={b}
+                        type="button"
+                        onClick={() => {
+                          setBattery(b);
+                          handleUnthaw(rawInput, b, false);
+                        }}
+                        className={`text-[11px] font-mono-num uppercase px-2.5 py-1 rounded-full transition ${
+                          battery === b
+                            ? "bg-amber-400/20 text-amber-300 border border-amber-400/40 font-bold"
+                            : `${mutedText} hover:text-current`
+                        }`}
+                      >
+                        {b === "low" ? "2m Low" : b === "steady" ? "5m Steady" : "10m Deep"}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="font-mono-num text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                    Melted: {completedIds.length}/{steps.length}
-                  </span>
-                  {splitCount > 0 && (
-                    <span className="font-mono-num text-xs font-bold px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                      ⚡ Split {splitCount}× smaller
-                    </span>
-                  )}
+                {/* Delicate 2px Thermal Progress Line */}
+                <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 transition-all duration-700 ease-out"
+                    style={{
+                      width: `${Math.max(
+                        10,
+                        Math.round(((activeIndex + (allDone ? 1 : 0.25)) / Math.max(1, steps.length)) * 100)
+                      )}%`,
+                    }}
+                  />
                 </div>
               </div>
             )}
 
-            {/* Active Micro-Step Stage */}
+            {/* Main Single Action Content — Open, Unboxed, Breathable */}
             {!allDone && activeStep ? (
-              <div key={stepAnimKey} className="space-y-6 animate-card-reveal">
-                <div
-                  className={`rounded-3xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative overflow-hidden ${subSurface}`}
-                >
-                  <div className="space-y-3 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-sm">
-                        DO ONLY THIS NOW · {activeStep.physicalVerb}
+              <div
+                key={stepAnimKey}
+                className="space-y-10 relative z-10 animate-card-reveal"
+              >
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-10">
+                  <div className="space-y-4 flex-1">
+                    <div className="inline-flex items-center gap-2.5">
+                      <span className="text-xs font-extrabold uppercase tracking-wider px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950">
+                        {activeStep.physicalVerb}
                       </span>
-                      <span className="font-mono-num text-xs px-2.5 py-1 rounded-lg bg-sky-500/15 text-sky-300 border border-sky-500/30">
-                        {activeStep.durationSeconds}s activation window
+                      <span className={`font-mono-num text-xs ${mutedText}`}>
+                        {activeStep.durationSeconds} seconds
                       </span>
                     </div>
 
-                    <h3 className="font-display text-2xl sm:text-4xl leading-[1.15] tracking-tight pt-1">
+                    <h2 className="font-display text-3xl sm:text-5xl leading-[1.14] tracking-tight">
                       {activeStep.action}
-                    </h3>
+                    </h2>
 
-                    <p className={`text-xs sm:text-sm italic ${mutedText}`}>
-                      Why this melts the freeze: {activeStep.whyItWorks}
+                    <p className={`text-sm leading-relaxed max-w-xl ${mutedText}`}>
+                      {activeStep.whyItWorks}
                     </p>
                   </div>
 
-                  {/* Animated Thermal Countdown Ring */}
+                  {/* Breathable Floating Countdown Ring */}
                   <div className="flex flex-col items-center shrink-0 self-center">
-                    <div className="relative w-32 h-32 flex items-center justify-center">
-                      <svg className="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
+                    <div className="relative w-36 h-36 flex items-center justify-center">
+                      <svg className="w-36 h-36 -rotate-90" viewBox="0 0 128 128">
                         <defs>
                           <linearGradient
                             id="thermalRingGrad"
@@ -879,20 +685,20 @@ export default function UnthawPage() {
                           </linearGradient>
                         </defs>
                         <circle
-                          cx="60"
-                          cy="60"
+                          cx="64"
+                          cy="64"
                           r={radius}
                           fill="none"
-                          stroke={isDark ? "#1E293B" : "#E7E5E4"}
-                          strokeWidth="8"
+                          stroke={isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)"}
+                          strokeWidth="6"
                         />
                         <circle
-                          cx="60"
-                          cy="60"
+                          cx="64"
+                          cy="64"
                           r={radius}
                           fill="none"
                           stroke="url(#thermalRingGrad)"
-                          strokeWidth="8"
+                          strokeWidth="6"
                           strokeLinecap="round"
                           strokeDasharray={circumference}
                           strokeDashoffset={strokeDashoffset}
@@ -900,119 +706,92 @@ export default function UnthawPage() {
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="font-mono-num font-extrabold text-2xl tracking-tight">
+                        <span className="font-mono-num font-bold text-3xl tracking-tight">
                           {formatClock(secondsLeft)}
                         </span>
-                        <span
-                          className={`text-[10px] font-bold uppercase tracking-widest ${
-                            timerRunning ? "text-amber-400 animate-pulse" : mutedText
-                          }`}
+                        <button
+                          type="button"
+                          onClick={() => setTimerRunning((r) => !r)}
+                          className="mt-1 text-[11px] font-bold uppercase tracking-widest text-amber-400 hover:underline"
                         >
-                          {timerRunning ? "Melting…" : "Ready"}
-                        </span>
+                          {timerRunning ? "Pause (Space)" : "Start (Space)"}
+                        </button>
                       </div>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setTimerRunning((r) => !r)}
-                      className={`btn-thermal mt-2.5 text-xs font-bold px-3.5 py-1.5 rounded-xl border ${
-                        timerRunning
-                          ? "bg-amber-500 text-slate-950 border-amber-400"
-                          : isDark
-                          ? "bg-slate-800 text-slate-200 border-slate-700 hover:border-amber-400"
-                          : "bg-white text-slate-900 border-stone-300 hover:border-amber-500"
-                      }`}
-                    >
-                      {timerRunning ? "Pause Timer (Space)" : "Start Timer (Space)"}
-                    </button>
                   </div>
                 </div>
 
-                {/* Tactile Motion Action Deck */}
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                {/* Spacious Action Row (No Stacked Cramped Boxes) */}
+                <div className="pt-4 flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.07]">
                   <button
                     type="button"
                     onClick={handleCompleteCurrentStep}
-                    className="btn-thermal sm:col-span-7 py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-400 to-sky-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2.5"
+                    className="btn-thermal py-4 px-8 rounded-full bg-gradient-to-r from-emerald-400 via-teal-400 to-sky-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/20 flex items-center gap-2.5"
                   >
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-5 h-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
-                    <span>Done — Melt &amp; Reveal Next Step (Enter)</span>
+                    <span>Done — Melt Next Micro-Step (Enter)</span>
                   </button>
 
-                  <div className="sm:col-span-5 flex flex-col gap-2">
+                  <div className="flex flex-wrap items-center gap-2.5">
                     <button
                       type="button"
                       onClick={handleSplitCurrentStep}
                       disabled={!activeStep.canSplit}
-                      className="btn-thermal py-2.5 px-4 rounded-xl border border-amber-400/60 bg-amber-500/15 hover:bg-amber-500/25 disabled:opacity-40 text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5"
+                      className="btn-thermal py-3 px-5 rounded-full border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400/20 disabled:opacity-40 text-amber-300 font-semibold text-xs"
                     >
-                      <span>⚡ Still Too Scary? Split in Half (S)</span>
+                      ⚡ Still Too Scary? Split in Half (S)
                     </button>
 
                     <button
                       type="button"
                       onClick={handleReadAloud}
-                      className={`btn-thermal py-2 px-4 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 ${
+                      className={`btn-thermal py-3 px-4 rounded-full border text-xs font-semibold ${
                         speaking
                           ? "border-sky-400 bg-sky-500/20 text-sky-300"
                           : isDark
-                          ? "border-slate-700 bg-slate-900/90 text-slate-300"
-                          : "border-stone-300 bg-white text-slate-800"
+                          ? "border-white/10 bg-white/[0.04] text-slate-300"
+                          : "border-stone-300 bg-stone-100 text-slate-800"
                       }`}
                     >
-                      <span>{speaking ? "Speaking Step Aloud…" : "🔊 Read Step Aloud (R)"}</span>
+                      {speaking ? "Speaking…" : "🔊 Read Aloud (R)"}
                     </button>
                   </div>
                 </div>
 
-                {/* Frosted Blindfold Shield OR Full Queue */}
-                {blindfoldMode ? (
-                  <div
-                    className={`rounded-2xl p-4 border border-dashed flex flex-wrap items-center justify-between gap-3 ${
-                      isDark
-                        ? "border-sky-500/40 bg-sky-950/25"
-                        : "border-sky-600/40 bg-sky-50/70"
-                    }`}
+                {/* Whisper-Quiet Blindfold Footer Line */}
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1">
+                  <span className={mutedText}>
+                    {blindfoldMode
+                      ? `❄️ Blindfold Shield active — ${hiddenRemainingCount} remaining micro-step${
+                          hiddenRemainingCount === 1 ? "" : "s"
+                        } hidden so your mind can rest.`
+                      : `Showing all ${steps.length} steps below.`}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setBlindfoldMode((b) => !b)}
+                    className="text-sky-400 hover:underline font-medium"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-400 shrink-0">
-                        ❄️
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold">
-                          Cryo Blindfold Shield Active: {hiddenRemainingCount} upcoming micro-step
-                          {hiddenRemainingCount === 1 ? "" : "s"} safely hidden behind frost
-                        </p>
-                        <p className={`text-xs ${mutedText}`}>
-                          Your working memory only has to hold Step {activeIndex + 1} right now.
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setBlindfoldMode(false)}
-                      className="btn-thermal text-xs font-bold px-3 py-1.5 rounded-xl bg-sky-500/20 text-sky-300 border border-sky-400/40"
-                    >
-                      Peek Through Frost ({steps.length})
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-2 pt-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-sky-400">
-                        All Micro-Steps in Sequence
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setBlindfoldMode(true)}
-                        className="text-xs underline text-amber-400 font-semibold"
-                      >
-                        Re-enable Blindfold Shield
-                      </button>
-                    </div>
+                    {blindfoldMode
+                      ? `Peek at all ${steps.length} steps (B)`
+                      : "Hide upcoming steps (B)"}
+                  </button>
+                </div>
+
+                {!blindfoldMode && (
+                  <div className="space-y-2 pt-3">
                     {steps.map((s, idx) => {
                       const done = completedIds.includes(s.id);
                       const isCurrent = idx === activeIndex;
@@ -1024,21 +803,21 @@ export default function UnthawPage() {
                             setSecondsLeft(s.durationSeconds);
                             setTimerRunning(false);
                           }}
-                          className={`p-3.5 rounded-2xl border text-xs cursor-pointer transition flex items-start justify-between gap-3 ${
+                          className={`px-4 py-3 rounded-2xl text-xs cursor-pointer transition flex items-center justify-between gap-3 ${
                             done
-                              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 line-through opacity-75"
+                              ? "opacity-50 line-through"
                               : isCurrent
-                              ? "bg-amber-500/15 border-amber-400 font-bold"
-                              : subSurface
+                              ? "bg-amber-400/15 border border-amber-400/40 font-semibold"
+                              : "bg-white/[0.03] hover:bg-white/[0.06]"
                           }`}
                         >
-                          <div>
-                            <span className="font-mono-num font-bold mr-2 text-amber-400">
-                              #{idx + 1}
-                            </span>
-                            <span>{s.action}</span>
-                          </div>
-                          <span className="font-mono-num shrink-0 text-sky-400">
+                          <span>
+                            <strong className="font-mono-num mr-2 text-amber-400">
+                              0{idx + 1}
+                            </strong>
+                            {s.action}
+                          </span>
+                          <span className="font-mono-num text-sky-400 shrink-0">
                             {s.durationSeconds}s
                           </span>
                         </div>
@@ -1049,107 +828,219 @@ export default function UnthawPage() {
               </div>
             ) : (
               allDone && (
-                <div className="rounded-3xl bg-gradient-to-br from-emerald-500/20 via-amber-500/15 to-sky-500/20 border-2 border-emerald-400/60 p-8 text-center space-y-4 animate-card-reveal">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-emerald-400 text-slate-950 font-extrabold text-3xl shadow-lg shadow-emerald-500/30">
+                <div className="py-10 text-center space-y-5 animate-card-reveal">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-emerald-400 text-slate-950 font-extrabold text-3xl shadow-lg shadow-emerald-500/30">
                     ☀
                   </div>
-                  <h3 className="font-display text-3xl sm:text-4xl text-emerald-400">
-                    Full Thaw Achieved — All {steps.length} Micro-Steps Complete!
-                  </h3>
-                  <p className={`text-sm max-w-md mx-auto ${mutedText}`}>
-                    You melted an intimidating wall of work (Freeze Score{" "}
-                    {plan?.metrics.intimidationScoreBefore}/100) into +24°C active momentum.
+                  <h2 className="font-display text-4xl sm:text-5xl text-emerald-400">
+                    Full Thaw Achieved — All {steps.length} Steps Complete!
+                  </h2>
+                  <p className={`text-base max-w-md mx-auto ${mutedText}`}>
+                    You turned an intimidating backlog ({plan?.metrics.intimidationScoreBefore}
+                    /100 Freeze) into +24°C active momentum.
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCompletedIds([]);
-                      setActiveIndex(0);
-                      setSecondsLeft(steps[0]?.durationSeconds ?? 90);
-                    }}
-                    className="btn-thermal px-5 py-2.5 rounded-xl bg-emerald-400 text-slate-950 text-xs font-extrabold"
-                  >
-                    Reset &amp; Thaw Another Task
-                  </button>
+                  <div className="pt-2 flex items-center justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCompletedIds([]);
+                        setActiveIndex(0);
+                        setSecondsLeft(steps[0]?.durationSeconds ?? 90);
+                      }}
+                      className="btn-thermal px-6 py-3 rounded-full bg-emerald-400 text-slate-950 text-xs font-extrabold"
+                    >
+                      Restart Sequence
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveView("receipt")}
+                      className="btn-thermal px-6 py-3 rounded-full border border-white/15 text-xs font-semibold"
+                    >
+                      View Before vs. After Receipt
+                    </button>
+                  </div>
                 </div>
               )
             )}
           </section>
-        </div>
+        )}
 
-        {/* Before vs. After Impact Receipt (Inspired by OGImage.gallery & Deck.gallery) */}
-        {plan && (
+        {/* STAGE 2: SPACIOUS TASK COMPOSER (When Changing or Pasting a Custom Task) */}
+        {activeView === "compose" && (
+          <section
+            aria-label="Task composer and battery selector"
+            className={`rounded-[32px] p-8 sm:p-12 space-y-8 animate-card-reveal ${mainStageSurface}`}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-widest text-sky-400">
+                  Dump What Is Freezing You
+                </span>
+                <h2 className="font-display text-3xl sm:text-4xl mt-1">
+                  Paste any overwhelming assignment or backlog
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveView("focus")}
+                className={`text-xs underline ${mutedText}`}
+              >
+                ← Back to Focus Tunnel
+              </button>
+            </div>
+
+            <textarea
+              id="raw-task-input"
+              rows={4}
+              value={rawInput}
+              onChange={(e) => {
+                setRawInput(e.target.value);
+                setSelectedPresetId("custom");
+              }}
+              placeholder="e.g., Write 12-page capstone paper on distributed consensus by Friday including 15 citations, benchmarks, and architecture diagrams..."
+              className={`w-full rounded-3xl p-5 text-base leading-relaxed transition focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                isDark
+                  ? "bg-white/[0.04] border border-white/10 text-slate-100"
+                  : "bg-stone-100/80 border border-stone-300 text-slate-900"
+              }`}
+            />
+
+            <div className="space-y-3">
+              <span className="block text-xs font-bold uppercase tracking-widest text-amber-400">
+                Select Your Current Cognitive Battery
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {(
+                  [
+                    {
+                      id: "low",
+                      title: "Low Battery (Frozen)",
+                      sub: "90s–2m gentle starter micro-steps",
+                    },
+                    {
+                      id: "steady",
+                      title: "Steady Battery",
+                      sub: "5-minute momentum steps",
+                    },
+                    {
+                      id: "deep",
+                      title: "Deep Flow",
+                      sub: "10-minute focus sprints",
+                    },
+                  ] as const
+                ).map((b) => {
+                  const selected = battery === b.id;
+                  return (
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => setBattery(b.id)}
+                      className={`btn-thermal p-5 rounded-2xl border text-left transition-all ${
+                        selected
+                          ? "bg-amber-400/15 border-amber-400"
+                          : isDark
+                          ? "bg-white/[0.03] border-white/10"
+                          : "bg-stone-100/70 border-stone-300"
+                      }`}
+                    >
+                      <div className="font-bold text-sm">{b.title}</div>
+                      <div className={`text-xs mt-1 ${mutedText}`}>{b.sub}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleUnthaw(rawInput, battery, true)}
+              disabled={loading || !rawInput.trim()}
+              className="btn-thermal w-full py-4 px-6 rounded-full bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-amber-500/20"
+            >
+              {loading
+                ? "Melting Into Micro-Steps…"
+                : "Unthaw & Enter Focus Tunnel →"}
+            </button>
+          </section>
+        )}
+
+        {/* STAGE 3: BEFORE VS. AFTER IMPACT RECEIPT (Dedicated Clean View) */}
+        {activeView === "receipt" && plan && (
           <section
             aria-label="Before and after impact comparison"
-            className={`rounded-3xl p-6 sm:p-8 space-y-5 ${cardSurface}`}
+            className={`rounded-[32px] p-8 sm:p-12 space-y-8 animate-card-reveal ${mainStageSurface}`}
           >
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">
-                  04 · Measurable Transformation Receipt
+                  Measurable Workflow Change
                 </span>
-                <h2 className="font-display text-2xl sm:text-3xl mt-0.5">
+                <h2 className="font-display text-3xl sm:text-4xl mt-1">
                   Before vs. After Impact Receipt
                 </h2>
               </div>
-              <div className="flex flex-wrap items-center gap-2 font-mono-num text-xs">
-                <span className="px-3 py-1.5 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/30 font-bold">
-                  BEFORE: {plan.metrics.intimidationScoreBefore}/100 Freeze
+
+              <div className="flex items-center gap-3 font-mono-num text-xs">
+                <span className="px-3.5 py-1.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 font-bold">
+                  Before: {plan.metrics.intimidationScoreBefore}/100 Freeze
                 </span>
-                <span className="text-amber-400 font-bold">→</span>
-                <span className="px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-extrabold">
-                  AFTER: {plan.metrics.intimidationScoreAfter}/100 (-
+                <span className="text-amber-400">→</span>
+                <span className="px-3.5 py-1.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-extrabold">
+                  After: {plan.metrics.intimidationScoreAfter}/100 (-
                   {plan.metrics.frictionReductionPercent}% Friction)
                 </span>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* BEFORE: Frozen Monolith */}
-              <div className="rounded-2xl border border-rose-500/35 bg-rose-950/15 p-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-rose-400">
-                    ❄️ BEFORE · Raw Frozen Backlog (-18°C)
-                  </span>
-                  <span className="font-mono-num text-xs text-rose-300">
-                    {plan.metrics.rawItemCount} tangled obligations visible at once
-                  </span>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-rose-400">
+                  ❄️ BEFORE · Raw Frozen Backlog (-18°C)
+                </span>
                 <p
-                  className={`text-xs p-3.5 rounded-xl font-mono-num leading-relaxed ${subSurface}`}
+                  className={`text-sm p-5 rounded-2xl leading-relaxed ${
+                    isDark ? "bg-white/[0.04]" : "bg-stone-100"
+                  }`}
                 >
                   {plan.rawInput}
                 </p>
-                <p className={`text-xs ${mutedText}`}>
-                  <strong className="text-rose-400">The Productivity Barrier:</strong>{" "}
-                  Seeing multi-hour deliverables and high-volume quotas all at once triggers executive-dysfunction freeze and avoidance.
+                <p className={`text-xs leading-relaxed ${mutedText}`}>
+                  {plan.metrics.rawItemCount} obligations stacked together trigger:{" "}
+                  {plan.metrics.cognitiveHazardsFound.join(" · ")}.
                 </p>
               </div>
 
-              {/* AFTER: Melted 90s Micro-Drop */}
-              <div className="rounded-2xl border border-emerald-500/40 bg-emerald-950/15 p-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">
-                    ☀️ AFTER · Unthaw Blindfold Step #1 (+24°C)
-                  </span>
-                  <span className="font-mono-num text-xs text-emerald-300">
-                    {steps[0]?.durationSeconds ?? 90}s physical ignition
-                  </span>
-                </div>
+              <div className="space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                  ☀️ AFTER · Single Blindfold Micro-Step (+24°C)
+                </span>
                 <p
-                  className={`text-xs p-3.5 rounded-xl font-semibold leading-relaxed ${subSurface}`}
+                  className={`text-sm p-5 rounded-2xl font-semibold leading-relaxed ${
+                    isDark
+                      ? "bg-emerald-500/10 border border-emerald-500/30"
+                      : "bg-emerald-50 border border-emerald-200"
+                  }`}
                 >
                   {steps[0]?.action}
                 </p>
-                <p className={`text-xs ${mutedText}`}>
-                  <strong className="text-emerald-400">The Meaningful Change:</strong>{" "}
-                  All other {Math.max(0, steps.length - 1)} steps stay hidden behind the Cryo Blindfold Shield until Step 1 is complete, and any step can be split in half into a 60s physical setup action.
+                <p className={`text-xs leading-relaxed ${mutedText}`}>
+                  All other {Math.max(0, steps.length - 1)} steps stay tucked behind the Blindfold Shield until Step 1 is done.
                 </p>
               </div>
             </div>
           </section>
         )}
       </main>
+
+      {/* Whisper-Quiet Keyboard Hint Footer */}
+      <footer className={`text-center pb-6 text-xs ${mutedText}`}>
+        Keyboard: <span className="font-mono-num">Space</span> timer ·{" "}
+        <span className="font-mono-num">Enter</span> complete step ·{" "}
+        <span className="font-mono-num">S</span> split in half ·{" "}
+        <span className="font-mono-num">B</span> blindfold shield ·{" "}
+        <span className="font-mono-num">R</span> read aloud ·{" "}
+        <span className="font-mono-num">T</span> dark/light mode
+      </footer>
     </div>
   );
 }
