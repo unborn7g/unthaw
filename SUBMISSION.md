@@ -9,6 +9,9 @@ Use this ready-to-paste copy when submitting **Unthaw** at `https://taskforge.de
 - **Project Name:** `Unthaw`
 - **Elevator Pitch / Tagline:** Every freeze melts one micro-step at a time — an accessible task-paralysis breaker that hides overwhelming backlogs behind Blindfold Mode and gives you one 90-second physical action at a time.
 - **Built With:** `nextjs`, `react`, `typescript`, `tailwindcss`, `web-speech-api`, `accessibility`
+- **Try It Out Links:**
+  - **Live App:** `https://unthaw-ten.vercel.app/`
+  - **GitHub Repository:** `https://github.com/unborn7g/unthaw`
 
 ---
 
