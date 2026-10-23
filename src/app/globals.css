@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-paper: #fbf9f4;
+  --bg-card: #ffffff;
+  --text-ink: #171715;
+  --text-muted: #57554f;
+  --accent-calm: #1d5c42;
+  --accent-warm: #c26318;
+  --border-soft: #e4dfd3;
+}
+
+body {
+  background-color: var(--bg-paper);
+  color: var(--text-ink);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+.dyslexia-mode {
+  letter-spacing: 0.055em !important;
+  word-spacing: 0.14em !important;
+  line-height: 1.85 !important;
+}
+
+.high-contrast-mode {
+  --bg-paper: #ffffff;
+  --bg-card: #ffffff;
+  --text-ink: #000000;
+  --text-muted: #111111;
+  --accent-calm: #004d2c;
+  --accent-warm: #993d00;
+  --border-soft: #000000;
+}
