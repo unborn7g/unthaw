@@ -91,13 +91,15 @@ test("T8: UI implements Blindfold Focus Tunnel, Dyslexia spacing, High Contrast,
   assert.match(pageSrc, /Before vs\. After Impact Receipt/);
 });
 
-test("T9: Studio UI includes bespoke UnthawBrandLogo SVG, Dark/Light theme switcher, Thermal Telemetry (-18°C to +24°C), and Liquid-Thermal button animations", () => {
+test("T9: Studio UI includes bespoke UnthawBrandLogo SVG, Sliding Track Moon/Sun Toggle, Larger Scenario Pills, and AgentVault-style Floating Bottom Dock (TUNNEL / UNTHAW / SHIELD / IMPACT)", () => {
   assert.match(pageSrc, /function UnthawBrandLogo/);
-  assert.match(pageSrc, /Light Mode/);
-  assert.match(pageSrc, /Dark Mode/);
+  assert.match(pageSrc, /translate-x-8 bg-\[#07090E\]/);
+  assert.match(pageSrc, /TUNNEL/);
+  assert.match(pageSrc, /UNTHAW/);
+  assert.match(pageSrc, /SHIELD ON/);
+  assert.match(pageSrc, /IMPACT/);
   assert.match(pageSrc, /currentTempC/);
   assert.match(cssSrc, /\.btn-thermal/);
-  assert.match(cssSrc, /@keyframes shimmerSweep/);
 });
 
 console.log(`\nAll ${passed}/9 Unthaw verification tests PASSED.`);

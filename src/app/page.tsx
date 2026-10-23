@@ -17,7 +17,7 @@ function UnthawBrandLogo({
 }) {
   const warmOpacity = Math.min(1, Math.max(0.25, thawRatio));
   return (
-    <div className="relative inline-flex items-center justify-center w-10 h-10 rounded-2xl p-[1.5px] bg-gradient-to-br from-sky-400 via-amber-400 to-emerald-400 shadow-lg shadow-amber-500/15 group">
+    <div className="relative inline-flex items-center justify-center w-11 h-11 rounded-2xl p-[1.5px] bg-gradient-to-br from-sky-400 via-amber-400 to-emerald-400 shadow-lg shadow-amber-500/15 group">
       <svg
         viewBox="0 0 64 64"
         fill="none"
@@ -106,7 +106,7 @@ export default function UnthawPage() {
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [completedIds, setCompletedIds] = useState<string[]>([]);
 
-  // Calm Single-Stage View Switcher (eliminates 15 boxes crammed on one screen)
+  // Calm Single-Stage View Switcher controlled by the AgentVault-style bottom dock
   const [activeView, setActiveView] = useState<StudioView>("focus");
 
   // Theme & Accessibility States
@@ -372,7 +372,7 @@ export default function UnthawPage() {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-500 flex flex-col justify-between ${
+      className={`min-h-screen transition-colors duration-500 flex flex-col justify-between pb-28 ${
         dyslexiaMode ? "dyslexia-mode" : ""
       } ${rootThemeClass}`}
     >
@@ -380,10 +380,9 @@ export default function UnthawPage() {
         {announcement}
       </div>
 
-      {/* Floating Minimal Command Dock Navbar */}
+      {/* Top Header Bar with Brand Identity + Tactile Sliding Moon/Sun Toggle (image-2 style) */}
       <header className="sticky top-5 z-30 px-4 sm:px-8">
-        <nav
-          aria-label="Primary Command Dock"
+        <div
           className={`max-w-5xl mx-auto rounded-full px-5 py-2.5 transition-all duration-300 ${
             highContrast
               ? isDark
@@ -396,16 +395,16 @@ export default function UnthawPage() {
         >
           <div className="flex flex-wrap items-center justify-between gap-4">
             {/* Brand Identity + Live Thermal Pill */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3.5">
               <UnthawBrandLogo
                 thawRatio={0.25 + thawProgress * 0.75}
                 isSpinning={loading}
               />
-              <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 bg-clip-text text-transparent">
+              <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 bg-clip-text text-transparent">
                 Unthaw
               </span>
               <span
-                className={`font-mono-num text-[11px] font-semibold px-3 py-1 rounded-full border transition-all duration-500 ${
+                className={`font-mono-num text-xs font-semibold px-3.5 py-1 rounded-full border transition-all duration-500 ${
                   currentTempC < -8
                     ? isDark
                       ? "bg-sky-950/60 text-sky-300 border-sky-500/30"
@@ -424,67 +423,17 @@ export default function UnthawPage() {
               </span>
             </div>
 
-            {/* Center View Navigation Pills (Only 1 Stage on Screen at a Time) */}
+            {/* Right Controls: Dyslexia, AAA Contrast + Tactile Sliding Moon/Sun Switch (image-2) */}
             <div
-              className={`inline-flex items-center p-1 rounded-full ${
-                isDark ? "bg-slate-900/90" : "bg-stone-200/70"
-              }`}
-              role="tablist"
-              aria-label="Workspace Stage"
-            >
-              {[
-                { id: "focus", label: "1. Focus Tunnel" },
-                { id: "compose", label: "2. Change Task" },
-                {
-                  id: "receipt",
-                  label: `3. Impact (-${plan?.metrics.frictionReductionPercent ?? 82}%)`,
-                },
-              ].map((tab) => {
-                const active = activeView === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={active}
-                    onClick={() => setActiveView(tab.id as StudioView)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                      active
-                        ? "bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 text-slate-950 shadow-sm font-bold"
-                        : `${mutedText} hover:text-current`
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Right Accessibility & Theme Controls */}
-            <div
-              className="flex items-center gap-1.5"
+              className="flex items-center gap-2.5"
               role="toolbar"
               aria-label="Theme and accessibility controls"
             >
               <button
                 type="button"
-                onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
-                aria-label={`Switch to ${isDark ? "Light" : "Dark"} mode`}
-                title="Shortcut: T — Switch between Dark and Light mode"
-                className={`btn-thermal flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border ${
-                  isDark
-                    ? "bg-slate-900/90 text-amber-300 border-white/10"
-                    : "bg-stone-100 text-slate-900 border-stone-300"
-                }`}
-              >
-                <span>{isDark ? "☀ Light Mode" : "☾ Dark Mode"}</span>
-              </button>
-
-              <button
-                type="button"
                 onClick={() => setDyslexiaMode((d) => !d)}
                 aria-pressed={dyslexiaMode}
-                className={`btn-thermal text-xs px-3 py-1.5 rounded-full border font-semibold ${
+                className={`btn-thermal text-xs px-3.5 py-2 rounded-full border font-semibold ${
                   dyslexiaMode
                     ? "bg-amber-400 text-slate-950 border-amber-400"
                     : isDark
@@ -499,7 +448,7 @@ export default function UnthawPage() {
                 type="button"
                 onClick={() => setHighContrast((c) => !c)}
                 aria-pressed={highContrast}
-                className={`btn-thermal text-xs px-3 py-1.5 rounded-full border font-semibold ${
+                className={`btn-thermal text-xs px-3.5 py-2 rounded-full border font-semibold ${
                   highContrast
                     ? isDark
                       ? "bg-white text-black border-white"
@@ -511,15 +460,71 @@ export default function UnthawPage() {
               >
                 AAA: {highContrast ? "ON" : "OFF"}
               </button>
+
+              {/* Tactile Sliding Pill Track Switch with Metallic Rim Knob & Moon/Sun Icon (image-2) */}
+              <button
+                type="button"
+                onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+                aria-label={`Switch to ${isDark ? "Light" : "Dark"} mode`}
+                title={`Current: ${
+                  isDark ? "Dark Mode" : "Light Mode"
+                } (Press T to toggle)`}
+                className={`relative inline-flex items-center w-[72px] h-10 rounded-full p-1 transition-colors duration-300 border shadow-inner cursor-pointer ${
+                  isDark
+                    ? "bg-[#222834] border-white/15"
+                    : "bg-stone-200 border-stone-300"
+                }`}
+              >
+                <span className="sr-only">
+                  {isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                </span>
+                {/* Sliding Circular Knob with Specular Metallic Border */}
+                <span
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-transform duration-300 ease-out shadow-md ${
+                    isDark
+                      ? "translate-x-8 bg-[#07090E] border border-white/35 text-white"
+                      : "translate-x-0 bg-white border border-amber-400/80 text-amber-500"
+                  }`}
+                >
+                  {isDark ? (
+                    /* Crisp Outline Crescent Moon Icon (matches image-2) */
+                    <svg
+                      className="w-4 h-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                    </svg>
+                  ) : (
+                    /* Crisp Outline Sun Icon for Light Mode */
+                    <svg
+                      className="w-4 h-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="4" />
+                      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                    </svg>
+                  )}
+                </span>
+              </button>
             </div>
           </div>
-        </nav>
+        </div>
       </header>
 
       {/* Center Breathing Workspace — Generous Negative Space, One Focal Canvas */}
-      <main className="flex-1 flex flex-col justify-center max-w-4xl w-full mx-auto px-5 sm:px-8 py-12 sm:py-16 space-y-10">
-        {/* Breathable Editorial Hero Title */}
-        <div className="text-center space-y-4 max-w-2xl mx-auto">
+      <main className="flex-1 flex flex-col justify-center max-w-4xl w-full mx-auto px-5 sm:px-8 py-10 sm:py-14 space-y-10">
+        {/* Breathable Editorial Hero Title + Bigger Scenario Pills (image-1 upgraded) */}
+        <div className="text-center space-y-5 max-w-3xl mx-auto">
           <h1 className="font-display text-4xl sm:text-6xl tracking-tight leading-[1.06]">
             Every freeze melts{" "}
             <span className="italic bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 bg-clip-text text-transparent">
@@ -527,12 +532,12 @@ export default function UnthawPage() {
             </span>{" "}
             at a time.
           </h1>
-          <p className={`text-sm sm:text-base leading-relaxed ${mutedText}`}>
+          <p className={`text-sm sm:text-base leading-relaxed max-w-xl mx-auto ${mutedText}`}>
             Your brain does not need 15 checkboxes right now. Everything else is tucked safely out of sight—just do this single physical action.
           </p>
 
-          {/* Lightweight Scenario Switcher Pills (Zero Cluttered Boxes) */}
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
+          {/* Larger, Chunkier Scenario Switcher Pills (per user feedback on image-1) */}
+          <div className="pt-3 flex flex-wrap items-center justify-center gap-3">
             {presets.map((p) => {
               const active = selectedPresetId === p.id;
               return (
@@ -540,14 +545,14 @@ export default function UnthawPage() {
                   key={p.id}
                   type="button"
                   onClick={() => handleSelectPreset(p)}
-                  className={`btn-thermal text-xs px-3.5 py-1.5 rounded-full transition-all ${
+                  className={`btn-thermal text-sm sm:text-[15px] px-5 py-2.5 sm:px-6 sm:py-3 rounded-full transition-all ${
                     active
                       ? isDark
-                        ? "bg-amber-400/20 text-amber-300 border border-amber-400/50 font-semibold"
-                        : "bg-amber-500/15 text-amber-900 border border-amber-500/40 font-semibold"
+                        ? "bg-amber-400/20 text-amber-300 border-2 border-amber-400/70 font-bold shadow-lg shadow-amber-500/10"
+                        : "bg-amber-500/15 text-amber-900 border-2 border-amber-500/60 font-bold shadow-md"
                       : isDark
-                      ? "bg-white/[0.04] text-slate-400 border border-white/[0.06] hover:text-slate-200"
-                      : "bg-stone-200/60 text-stone-600 border border-stone-300/60 hover:text-stone-900"
+                      ? "bg-white/[0.04] text-slate-300 border border-white/[0.09] hover:border-white/25 hover:text-white font-medium"
+                      : "bg-stone-200/70 text-stone-700 border border-stone-300/80 hover:text-stone-950 font-medium"
                   }`}
                 >
                   {p.label}
@@ -557,10 +562,10 @@ export default function UnthawPage() {
             <button
               type="button"
               onClick={() => setActiveView("compose")}
-              className={`btn-thermal text-xs px-3.5 py-1.5 rounded-full border border-dashed ${
+              className={`btn-thermal text-sm sm:text-[15px] px-5 py-2.5 sm:px-6 sm:py-3 rounded-full border-2 border-dashed font-semibold ${
                 isDark
-                  ? "border-sky-400/40 text-sky-300 hover:bg-sky-400/10"
-                  : "border-sky-600/40 text-sky-800 hover:bg-sky-50"
+                  ? "border-sky-400/50 text-sky-300 hover:bg-sky-400/15"
+                  : "border-sky-600/50 text-sky-800 hover:bg-sky-50"
               }`}
             >
               + Paste Your Own Task
@@ -576,7 +581,6 @@ export default function UnthawPage() {
               thawPulse ? "ring-2 ring-amber-400/70 scale-[1.005]" : ""
             }`}
           >
-            {/* Subtle Ambient Glow Inside the Sanctuary */}
             {!highContrast && (
               <div
                 aria-hidden="true"
@@ -589,23 +593,23 @@ export default function UnthawPage() {
               <div className="space-y-4 mb-10 relative z-10">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                    <span className="font-mono-num text-xs uppercase tracking-widest font-bold text-emerald-400">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                    <span className="font-mono-num text-xs sm:text-sm uppercase tracking-widest font-bold text-emerald-400">
                       Step {Math.min(activeIndex + 1, steps.length)} of{" "}
                       {steps.length}
                     </span>
-                    <span className={`text-xs ${mutedText}`}>
+                    <span className={`text-xs sm:text-sm ${mutedText}`}>
                       · {battery.toUpperCase()} BATTERY
                     </span>
                     {splitCount > 0 && (
-                      <span className="font-mono-num text-xs text-amber-400">
+                      <span className="font-mono-num text-xs sm:text-sm text-amber-400 font-bold">
                         · Split {splitCount}× smaller
                       </span>
                     )}
                   </div>
 
                   {/* Quick Battery Switcher Pills */}
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     {(["low", "steady", "deep"] as const).map((b) => (
                       <button
                         key={b}
@@ -614,9 +618,9 @@ export default function UnthawPage() {
                           setBattery(b);
                           handleUnthaw(rawInput, b, false);
                         }}
-                        className={`text-[11px] font-mono-num uppercase px-2.5 py-1 rounded-full transition ${
+                        className={`text-xs font-mono-num uppercase px-3.5 py-1.5 rounded-full transition ${
                           battery === b
-                            ? "bg-amber-400/20 text-amber-300 border border-amber-400/40 font-bold"
+                            ? "bg-amber-400/20 text-amber-300 border border-amber-400/50 font-bold"
                             : `${mutedText} hover:text-current`
                         }`}
                       >
@@ -626,14 +630,18 @@ export default function UnthawPage() {
                   </div>
                 </div>
 
-                {/* Delicate 2px Thermal Progress Line */}
+                {/* Delicate Thermal Progress Line */}
                 <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 transition-all duration-700 ease-out"
                     style={{
                       width: `${Math.max(
                         10,
-                        Math.round(((activeIndex + (allDone ? 1 : 0.25)) / Math.max(1, steps.length)) * 100)
+                        Math.round(
+                          ((activeIndex + (allDone ? 1 : 0.25)) /
+                            Math.max(1, steps.length)) *
+                            100
+                        )
                       )}%`,
                     }}
                   />
@@ -649,11 +657,11 @@ export default function UnthawPage() {
               >
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-10">
                   <div className="space-y-4 flex-1">
-                    <div className="inline-flex items-center gap-2.5">
-                      <span className="text-xs font-extrabold uppercase tracking-wider px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950">
+                    <div className="inline-flex items-center gap-3">
+                      <span className="text-xs font-extrabold uppercase tracking-wider px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950">
                         {activeStep.physicalVerb}
                       </span>
-                      <span className={`font-mono-num text-xs ${mutedText}`}>
+                      <span className={`font-mono-num text-xs sm:text-sm ${mutedText}`}>
                         {activeStep.durationSeconds} seconds
                       </span>
                     </div>
@@ -662,7 +670,7 @@ export default function UnthawPage() {
                       {activeStep.action}
                     </h2>
 
-                    <p className={`text-sm leading-relaxed max-w-xl ${mutedText}`}>
+                    <p className={`text-sm sm:text-base leading-relaxed max-w-xl ${mutedText}`}>
                       {activeStep.whyItWorks}
                     </p>
                   </div>
@@ -689,7 +697,9 @@ export default function UnthawPage() {
                           cy="64"
                           r={radius}
                           fill="none"
-                          stroke={isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)"}
+                          stroke={
+                            isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)"
+                          }
                           strokeWidth="6"
                         />
                         <circle
@@ -712,21 +722,21 @@ export default function UnthawPage() {
                         <button
                           type="button"
                           onClick={() => setTimerRunning((r) => !r)}
-                          className="mt-1 text-[11px] font-bold uppercase tracking-widest text-amber-400 hover:underline"
+                          className="mt-1.5 text-xs font-bold uppercase tracking-widest text-amber-400 hover:underline"
                         >
-                          {timerRunning ? "Pause (Space)" : "Start (Space)"}
+                          {timerRunning ? "Pause" : "Start"}
                         </button>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Spacious Action Row (No Stacked Cramped Boxes) */}
+                {/* Spacious Action Row */}
                 <div className="pt-4 flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.07]">
                   <button
                     type="button"
                     onClick={handleCompleteCurrentStep}
-                    className="btn-thermal py-4 px-8 rounded-full bg-gradient-to-r from-emerald-400 via-teal-400 to-sky-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/20 flex items-center gap-2.5"
+                    className="btn-thermal py-4 px-8 rounded-full bg-gradient-to-r from-emerald-400 via-teal-400 to-sky-400 text-slate-950 font-extrabold text-sm sm:text-base shadow-lg shadow-emerald-500/20 flex items-center gap-2.5"
                   >
                     <svg
                       className="w-5 h-5"
@@ -744,12 +754,12 @@ export default function UnthawPage() {
                     <span>Done — Melt Next Micro-Step (Enter)</span>
                   </button>
 
-                  <div className="flex flex-wrap items-center gap-2.5">
+                  <div className="flex flex-wrap items-center gap-3">
                     <button
                       type="button"
                       onClick={handleSplitCurrentStep}
                       disabled={!activeStep.canSplit}
-                      className="btn-thermal py-3 px-5 rounded-full border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400/20 disabled:opacity-40 text-amber-300 font-semibold text-xs"
+                      className="btn-thermal py-3.5 px-6 rounded-full border border-amber-400/50 bg-amber-400/10 hover:bg-amber-400/20 disabled:opacity-40 text-amber-300 font-semibold text-xs sm:text-sm"
                     >
                       ⚡ Still Too Scary? Split in Half (S)
                     </button>
@@ -757,7 +767,7 @@ export default function UnthawPage() {
                     <button
                       type="button"
                       onClick={handleReadAloud}
-                      className={`btn-thermal py-3 px-4 rounded-full border text-xs font-semibold ${
+                      className={`btn-thermal py-3.5 px-5 rounded-full border text-xs sm:text-sm font-semibold ${
                         speaking
                           ? "border-sky-400 bg-sky-500/20 text-sky-300"
                           : isDark
@@ -771,7 +781,7 @@ export default function UnthawPage() {
                 </div>
 
                 {/* Whisper-Quiet Blindfold Footer Line */}
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm pt-1">
                   <span className={mutedText}>
                     {blindfoldMode
                       ? `❄️ Blindfold Shield active — ${hiddenRemainingCount} remaining micro-step${
@@ -782,7 +792,7 @@ export default function UnthawPage() {
                   <button
                     type="button"
                     onClick={() => setBlindfoldMode((b) => !b)}
-                    className="text-sky-400 hover:underline font-medium"
+                    className="text-sky-400 hover:underline font-semibold"
                   >
                     {blindfoldMode
                       ? `Peek at all ${steps.length} steps (B)`
@@ -791,7 +801,7 @@ export default function UnthawPage() {
                 </div>
 
                 {!blindfoldMode && (
-                  <div className="space-y-2 pt-3">
+                  <div className="space-y-2.5 pt-3">
                     {steps.map((s, idx) => {
                       const done = completedIds.includes(s.id);
                       const isCurrent = idx === activeIndex;
@@ -803,7 +813,7 @@ export default function UnthawPage() {
                             setSecondsLeft(s.durationSeconds);
                             setTimerRunning(false);
                           }}
-                          className={`px-4 py-3 rounded-2xl text-xs cursor-pointer transition flex items-center justify-between gap-3 ${
+                          className={`px-5 py-3.5 rounded-2xl text-xs sm:text-sm cursor-pointer transition flex items-center justify-between gap-3 ${
                             done
                               ? "opacity-50 line-through"
                               : isCurrent
@@ -812,7 +822,7 @@ export default function UnthawPage() {
                           }`}
                         >
                           <span>
-                            <strong className="font-mono-num mr-2 text-amber-400">
+                            <strong className="font-mono-num mr-2.5 text-amber-400">
                               0{idx + 1}
                             </strong>
                             {s.action}
@@ -836,8 +846,9 @@ export default function UnthawPage() {
                     Full Thaw Achieved — All {steps.length} Steps Complete!
                   </h2>
                   <p className={`text-base max-w-md mx-auto ${mutedText}`}>
-                    You turned an intimidating backlog ({plan?.metrics.intimidationScoreBefore}
-                    /100 Freeze) into +24°C active momentum.
+                    You turned an intimidating backlog (
+                    {plan?.metrics.intimidationScoreBefore}/100 Freeze) into
+                    +24°C active momentum.
                   </p>
                   <div className="pt-2 flex items-center justify-center gap-3">
                     <button
@@ -847,14 +858,14 @@ export default function UnthawPage() {
                         setActiveIndex(0);
                         setSecondsLeft(steps[0]?.durationSeconds ?? 90);
                       }}
-                      className="btn-thermal px-6 py-3 rounded-full bg-emerald-400 text-slate-950 text-xs font-extrabold"
+                      className="btn-thermal px-6 py-3 rounded-full bg-emerald-400 text-slate-950 text-sm font-extrabold"
                     >
                       Restart Sequence
                     </button>
                     <button
                       type="button"
                       onClick={() => setActiveView("receipt")}
-                      className="btn-thermal px-6 py-3 rounded-full border border-white/15 text-xs font-semibold"
+                      className="btn-thermal px-6 py-3 rounded-full border border-white/15 text-sm font-semibold"
                     >
                       View Before vs. After Receipt
                     </button>
@@ -865,7 +876,7 @@ export default function UnthawPage() {
           </section>
         )}
 
-        {/* STAGE 2: SPACIOUS TASK COMPOSER (When Changing or Pasting a Custom Task) */}
+        {/* STAGE 2: SPACIOUS TASK COMPOSER */}
         {activeView === "compose" && (
           <section
             aria-label="Task composer and battery selector"
@@ -883,7 +894,7 @@ export default function UnthawPage() {
               <button
                 type="button"
                 onClick={() => setActiveView("focus")}
-                className={`text-xs underline ${mutedText}`}
+                className={`text-xs sm:text-sm underline ${mutedText}`}
               >
                 ← Back to Focus Tunnel
               </button>
@@ -955,7 +966,7 @@ export default function UnthawPage() {
               type="button"
               onClick={() => handleUnthaw(rawInput, battery, true)}
               disabled={loading || !rawInput.trim()}
-              className="btn-thermal w-full py-4 px-6 rounded-full bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-amber-500/20"
+              className="btn-thermal w-full py-4 px-6 rounded-full bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 text-slate-950 font-extrabold text-sm sm:text-base shadow-lg shadow-amber-500/20"
             >
               {loading
                 ? "Melting Into Micro-Steps…"
@@ -964,7 +975,7 @@ export default function UnthawPage() {
           </section>
         )}
 
-        {/* STAGE 3: BEFORE VS. AFTER IMPACT RECEIPT (Dedicated Clean View) */}
+        {/* STAGE 3: BEFORE VS. AFTER IMPACT RECEIPT */}
         {activeView === "receipt" && plan && (
           <section
             aria-label="Before and after impact comparison"
@@ -980,12 +991,12 @@ export default function UnthawPage() {
                 </h2>
               </div>
 
-              <div className="flex items-center gap-3 font-mono-num text-xs">
-                <span className="px-3.5 py-1.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 font-bold">
+              <div className="flex items-center gap-3 font-mono-num text-xs sm:text-sm">
+                <span className="px-4 py-1.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 font-bold">
                   Before: {plan.metrics.intimidationScoreBefore}/100 Freeze
                 </span>
                 <span className="text-amber-400">→</span>
-                <span className="px-3.5 py-1.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-extrabold">
+                <span className="px-4 py-1.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-extrabold">
                   After: {plan.metrics.intimidationScoreAfter}/100 (-
                   {plan.metrics.frictionReductionPercent}% Friction)
                 </span>
@@ -1024,7 +1035,8 @@ export default function UnthawPage() {
                   {steps[0]?.action}
                 </p>
                 <p className={`text-xs leading-relaxed ${mutedText}`}>
-                  All other {Math.max(0, steps.length - 1)} steps stay tucked behind the Blindfold Shield until Step 1 is done.
+                  All other {Math.max(0, steps.length - 1)} steps stay tucked
+                  behind the Blindfold Shield until Step 1 is done.
                 </p>
               </div>
             </div>
@@ -1032,15 +1044,149 @@ export default function UnthawPage() {
         )}
       </main>
 
-      {/* Whisper-Quiet Keyboard Hint Footer */}
-      <footer className={`text-center pb-6 text-xs ${mutedText}`}>
-        Keyboard: <span className="font-mono-num">Space</span> timer ·{" "}
-        <span className="font-mono-num">Enter</span> complete step ·{" "}
-        <span className="font-mono-num">S</span> split in half ·{" "}
-        <span className="font-mono-num">B</span> blindfold shield ·{" "}
-        <span className="font-mono-num">R</span> read aloud ·{" "}
-        <span className="font-mono-num">T</span> dark/light mode
-      </footer>
+      {/* Fixed Bottom-Center AgentVault-Style Glassmorphic Pill Dock (image-3 style) */}
+      <div className="fixed bottom-5 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none">
+        <nav
+          aria-label="Workspace Bottom Dock"
+          className={`pointer-events-auto inline-flex items-center gap-6 sm:gap-10 px-8 sm:px-11 py-3.5 rounded-full transition-all duration-300 ${
+            highContrast
+              ? isDark
+                ? "bg-black border-2 border-white"
+                : "bg-white border-2 border-black"
+              : isDark
+              ? "bg-[#0B1322]/90 border border-white/[0.11] shadow-[0_20px_50px_rgba(0,0,0,0.75)] backdrop-blur-2xl"
+              : "bg-white/95 border border-stone-300/90 shadow-[0_16px_40px_rgba(0,0,0,0.12)] backdrop-blur-2xl"
+          }`}
+        >
+          {/* Dock Item 1: TUNNEL (4-quadrant grid icon like VAULT in image-3) */}
+          <button
+            type="button"
+            onClick={() => setActiveView("focus")}
+            className={`group flex flex-col items-center gap-1.5 transition-all duration-200 hover:-translate-y-0.5 ${
+              activeView === "focus"
+                ? isDark
+                  ? "text-sky-300"
+                  : "text-sky-700"
+                : isDark
+                ? "text-slate-400 hover:text-slate-200"
+                : "text-stone-500 hover:text-stone-900"
+            }`}
+          >
+            <svg
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="4" rx="1.5" />
+              <rect x="14" y="11" width="7" height="10" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            </svg>
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase">
+              TUNNEL
+            </span>
+          </button>
+
+          {/* Dock Item 2: UNTHAW (+ plus icon like PROPOSE in image-3) */}
+          <button
+            type="button"
+            onClick={() => setActiveView("compose")}
+            className={`group flex flex-col items-center gap-1.5 transition-all duration-200 hover:-translate-y-0.5 ${
+              activeView === "compose"
+                ? isDark
+                  ? "text-amber-300"
+                  : "text-amber-700"
+                : isDark
+                ? "text-slate-400 hover:text-slate-200"
+                : "text-stone-500 hover:text-stone-900"
+            }`}
+          >
+            <svg
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.9"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase">
+              UNTHAW
+            </span>
+          </button>
+
+          {/* Dock Item 3: SHIELD (Lock icon like ESCROW in image-3 — toggles Blindfold Shield) */}
+          <button
+            type="button"
+            onClick={() => {
+              setBlindfoldMode((b) => !b);
+              setActiveView("focus");
+            }}
+            aria-pressed={blindfoldMode}
+            className={`group flex flex-col items-center gap-1.5 transition-all duration-200 hover:-translate-y-0.5 ${
+              blindfoldMode
+                ? isDark
+                  ? "text-emerald-300"
+                  : "text-emerald-700"
+                : isDark
+                ? "text-slate-400 hover:text-slate-200"
+                : "text-stone-500 hover:text-stone-900"
+            }`}
+          >
+            <svg
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="4" y="11" width="16" height="10" rx="2.5" />
+              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+            </svg>
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase">
+              {blindfoldMode ? "SHIELD ON" : "SHIELD OFF"}
+            </span>
+          </button>
+
+          {/* Dock Item 4: IMPACT (Shield emblem icon like MORE in image-3) */}
+          <button
+            type="button"
+            onClick={() => setActiveView("receipt")}
+            className={`group flex flex-col items-center gap-1.5 transition-all duration-200 hover:-translate-y-0.5 ${
+              activeView === "receipt"
+                ? isDark
+                  ? "text-emerald-300"
+                  : "text-emerald-700"
+                : isDark
+                ? "text-slate-400 hover:text-slate-200"
+                : "text-stone-500 hover:text-stone-900"
+            }`}
+          >
+            <svg
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase">
+              IMPACT
+            </span>
+          </button>
+        </nav>
+      </div>
     </div>
   );
 }
